@@ -50,31 +50,33 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class maintains all the JMS sessions and connections required to publish a message to a single topic/queue.
- * Certain methods from the ESB JMS transport itself have been re-used here with minor modifications.
  */
 public class PublisherContext {
 
     /**
      * JNDI Prefix for topics.
      */
-    public static final String TOPIC_NAME_PREFIX = "topic";
+//    public static final String TOPIC_NAME_PREFIX = "topic";
     /**
      * JNDI Prefix for queues.
      */
-    public static final String QUEUE_NAME_PREFIX = "queue";
+//    public static final String QUEUE_NAME_PREFIX = "queue";
 
     private static final Log log = LogFactory.getLog(PublisherContext.class);
     /**
      * Properties read from the above file.
      */
     private static Properties jndiProperties;
+    /**
+     *
+     */
     private final String connectionFactoryValue;
     /**
      * Object-wise lock to synchronize publishing to the same topic.
      */
     private final Lock publisherLock = new ReentrantLock();
     /**
-     * Connection Factory type specific to WSO2 MB
+     * Connection Factory type specific to message broker
      */
     private String namingFactory;
     /**
@@ -94,7 +96,7 @@ public class PublisherContext {
      */
     private ConnectionFactory connectionFactory;
     /**
-     * Network connection used to communicate with WSO2 MB.
+     * Network connection used to communicate with message broker.
      */
     private Connection connection;
     /**
@@ -102,7 +104,7 @@ public class PublisherContext {
      */
     private Destination destination;
     /**
-     * JMS Session used to communicate with WSO2 MB.
+     * JMS Session used to communicate with message broker.
      */
     private Session session;
 
@@ -112,21 +114,18 @@ public class PublisherContext {
     private MessageProducer messageProducer;
 
     /**
-     * Initialize the PublisherContext for a specific destination planning to use a pre-defined JMS connection
-     * factory.
+     * Initialize the PublisherContext for a specific destination planning to use a pre-defined JMS connection factory.
      *
      * @param destinationName        Name of topic
      * @param connectionFactoryName  Name of JMS connection factory as defined in jndi.properties file.
-     * @param connectionFactoryValue
+     * @param connectionFactoryValue URL of the JNDI provider.
      * @throws NamingException if the jndi processing results in an invalid naming convention or non-existent
      *                         properties.
      * @throws JMSException    Connectivity issues, invalid destination type
-     * @throws IOException     File reading error when trying to read the jndi.properties file.
      */
     public PublisherContext(String destinationName, String connectionFactoryName, String destinationType,
                             String connectionFactoryValue, String namingFactory)
-            throws NamingException, JMSException, IOException {
-
+            throws JMSException, NamingException {
         this.destinationName = destinationName;
         this.connectionFactoryName = connectionFactoryName;
         this.destinationType = destinationType;
@@ -136,10 +135,10 @@ public class PublisherContext {
             initializeJNDIProperties();
         }
         switch (destinationType) {
-            case QUEUE_NAME_PREFIX:
+            case JMSConnectorConstants.QUEUE_NAME_PREFIX:
                 initializeQueueProducer();
                 break;
-            case TOPIC_NAME_PREFIX:
+            case JMSConnectorConstants.TOPIC_NAME_PREFIX:
                 initializeTopicProducer();
                 break;
             default:
@@ -149,7 +148,7 @@ public class PublisherContext {
     }
 
     /**
-     * Set a property within the input message context (axis2/synapse).
+     * Set a property within the input message context.
      *
      * @param message JMS Message
      * @param msgCtx  Message context
@@ -233,7 +232,7 @@ public class PublisherContext {
      * @throws NamingException
      * @throws IOException
      */
-    private void initializeJNDIProperties() throws NamingException, IOException {
+    private void initializeJNDIProperties() {
         jndiProperties = new Properties();
         jndiProperties.put("connectionfactory." + connectionFactoryName, connectionFactoryValue);
         jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY, namingFactory);
@@ -244,9 +243,9 @@ public class PublisherContext {
      * @throws JMSException
      */
     private void initializeQueueProducer() throws NamingException, JMSException {
-        if (!jndiProperties.containsKey(QUEUE_NAME_PREFIX + "." + destinationName)) {
+        if (!jndiProperties.containsKey(JMSConnectorConstants.QUEUE_NAME_PREFIX + "." + destinationName)) {
             log.warn("Queue not defined in default jndi.properties !");
-            jndiProperties.put(QUEUE_NAME_PREFIX + "." + destinationName, destinationName);
+            jndiProperties.put(JMSConnectorConstants.QUEUE_NAME_PREFIX + "." + destinationName, destinationName);
         }
         InitialContext initialJMSContext = new InitialContext(jndiProperties);
         connectionFactory = (QueueConnectionFactory) initialJMSContext.lookup(connectionFactoryName);
@@ -264,9 +263,9 @@ public class PublisherContext {
      * @throws JMSException
      */
     private void initializeTopicProducer() throws NamingException, JMSException {
-        if (!jndiProperties.containsKey(TOPIC_NAME_PREFIX + "." + destinationName)) {
+        if (!jndiProperties.containsKey(JMSConnectorConstants.TOPIC_NAME_PREFIX + "." + destinationName)) {
             log.warn("Topic not defined in default jndi.properties !");
-            jndiProperties.put(TOPIC_NAME_PREFIX + "." + destinationName, destinationName);
+            jndiProperties.put(JMSConnectorConstants.TOPIC_NAME_PREFIX + "." + destinationName, destinationName);
         }
         InitialContext initialJMSContext = new InitialContext(jndiProperties);
         connectionFactory = (TopicConnectionFactory) initialJMSContext.lookup(connectionFactoryName);
@@ -458,7 +457,7 @@ public class PublisherContext {
         // perform actual message sending
         try {
 
-            if (QUEUE_NAME_PREFIX.equals(destinationType)) {
+            if (JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) {
                 try {
                     ((QueueSender) messageProducer).send(message);
                 } catch (JMSException e) {

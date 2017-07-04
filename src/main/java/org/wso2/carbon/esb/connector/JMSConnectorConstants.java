@@ -37,6 +37,8 @@ public class JMSConnectorConstants {
     public static final String JMS_TIME_TO_LIVE = "JMS_TIME_TO_LIVE";
     public static final String JMS_MESSAGE_ID = "JMS_MESSAGE_ID";
 
+    public static final String TOPIC_NAME_PREFIX = "topic";
+    public static final String QUEUE_NAME_PREFIX = "queue";
     public static final String SOAPACTION = "SOAPAction";
     public static final QName DEFAULT_BINARY_WRAPPER = new QName("http://ws.apache.org/commons/ns/payload",
             "binary");

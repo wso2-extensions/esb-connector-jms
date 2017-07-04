@@ -32,16 +32,17 @@ public class Init extends AbstractConnector {
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
         }
-        if ((!JMSConnectorSendMessage.QUEUE_NAME_PREFIX.equals(destinationType)) &&
-                (!JMSConnectorSendMessage.TOPIC_NAME_PREFIX.equals(destinationType))) {
+
+        if ((!JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) &&
+                (!JMSConnectorConstants.TOPIC_NAME_PREFIX.equals(destinationType))) {
             handleException("Invalid destination type. It must be a queue or a topic. Current value : " +
                     destinationType, messageContext);
         }
         //TODO key should be the combination of destinationType, destinationName,ConnectionFactoryName,tenantID
-        String publisherContextKey = destinationType + ":/" + destinationName;
-        if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherContextKey)) {
-            synchronized (publisherContextKey.intern()) {
-                if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherContextKey)) {
+        String publisherCacheKey = destinationType + ":/" + destinationName;
+        if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
+            synchronized (publisherCacheKey.intern()) {
+                if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
                     String namingFactory = (String) messageContext.getProperty(JMSConnectorConstants.NamingFactory);
                     String connectionFactoryValue = (String) messageContext
                             .getProperty(JMSConnectorConstants.ConnectionFactoryValue);
@@ -53,7 +54,7 @@ public class Init extends AbstractConnector {
                             .getProperty(JMSConnectorConstants.Connection_Pool_Size));
                     PublisherCache.setCacheExpirationInterval(cacheExpirationInterval);
                     log.info("JMS Publisher pool cache miss for destination : " + destinationName);
-                    PublisherCache.getJMSPublisherPoolCache().put(publisherContextKey,
+                    PublisherCache.getJMSPublisherPoolCache().put(publisherCacheKey,
                             new PublisherPool(destinationName, destinationType, connectionFactoryName,
                                     connectionPoolSize, connectionFactoryValue, namingFactory));
                 }

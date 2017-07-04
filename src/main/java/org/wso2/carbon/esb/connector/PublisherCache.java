@@ -59,7 +59,7 @@ public class PublisherCache {
     private static int cacheExpirationInterval;
 
     /**
-     * Get the cache which holds all sessions created for publishing to topics using this mediator.
+     * Get the cache which holds all sessions created for publishing to topics using this connector.
      *
      * @return Cache with key PublisherCache
      */
@@ -95,7 +95,7 @@ public class PublisherCache {
     /**
      * Set the interval at which the cached entries should expire based on last Accessed timestamp.
      *
-     * @param cacheExpirationInterval interval at which the cached entries should expire based on last Accessed timestamp.
+     * @param cacheExpirationInterval Expectational interval time
      */
     public static void setCacheExpirationInterval(int cacheExpirationInterval) {
         PublisherCache.cacheExpirationInterval = cacheExpirationInterval;

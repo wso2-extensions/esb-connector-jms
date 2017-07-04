@@ -35,14 +35,7 @@ import java.io.IOException;
  */
 public class JMSConnectorSendMessage extends AbstractConnector {
 
-    /**
-     * JNDI Prefix for topics.
-     */
-    public static final String TOPIC_NAME_PREFIX = "topic";
-    /**
-     * JNDI Prefix for queues.
-     */
-    public static final String QUEUE_NAME_PREFIX = "queue";
+
     private static final Log log = LogFactory.getLog(JMSConnectorSendMessage.class);
 
     /**
@@ -51,19 +44,15 @@ public class JMSConnectorSendMessage extends AbstractConnector {
      */
     @Override
     public void connect(MessageContext messageContext) throws ConnectException {
-        String destinationName = messageContext.getProperty(JMSConnectorConstants.Destination_Name).toString();
-        //Type of destination. "queue" or "topic".
-        String destinationType = messageContext.getProperty(JMSConnectorConstants.Destination_Type).toString();
-        //Connection factory name as configured in jndi.properties file. Could use different connection factories for
-        // topics and queues.
-        String connectionFactoryName = messageContext
-                .getProperty(JMSConnectorConstants.Connection_Factory_Name).toString();
-        //Maximum number of connections allowed for a single destination+destinationType combination.
+        String destinationName = (String) messageContext.getProperty(JMSConnectorConstants.Destination_Name);
+        String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.Destination_Type);
+        String connectionFactoryName = (String) messageContext
+                .getProperty(JMSConnectorConstants.Connection_Factory_Name);
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
         }
-        if ((!JMSConnectorSendMessage.QUEUE_NAME_PREFIX.equals(destinationType)) &&
-                (!JMSConnectorSendMessage.TOPIC_NAME_PREFIX.equals(destinationType))) {
+        if ((!JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) &&
+                (!JMSConnectorConstants.TOPIC_NAME_PREFIX.equals(destinationType))) {
             handleException("Invalid destination type. It must be a queue or a topic. Current value : " +
                     destinationType, messageContext);
         }
@@ -78,19 +67,16 @@ public class JMSConnectorSendMessage extends AbstractConnector {
         PublisherPool publisherPool;
         PublisherContext publisherContext = null;
         //TODO key should be the combination of destinationType, destinationName,ConnectionFactoryName,tenantID
-        String publisherContextKey = destinationType + ":/" + destinationName; //queue:/queueA
-        publisherPool = PublisherCache.getJMSPublisherPoolCache().get(publisherContextKey);
+        String publisherCacheKey = destinationType + ":/" + destinationName;
+        publisherPool = PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey);
         if (null == publisherPool) {
             handleException("Pool cannot be empty please create a connection pool", messageContext);
         }
         try {
-            try {
-                publisherContext = publisherPool.getPublisher();
-            } catch (PublisherNotAvailableException e) {
-                e.printStackTrace();
+            publisherContext = publisherPool.getPublisher();
+            if (publisherContext != null) {
+                publisherContext.publishMessage(((Axis2MessageContext) messageContext).getAxis2MessageContext());
             }
-            assert publisherContext != null;
-            publisherContext.publishMessage(((Axis2MessageContext) messageContext).getAxis2MessageContext());
         } catch (JMSException e) {
             try {
                 publisherPool.close();
@@ -104,6 +90,8 @@ public class JMSConnectorSendMessage extends AbstractConnector {
             handleException("IOException : " + e, messageContext);
         } catch (NamingException e) {
             handleException("NamingException : ", e, messageContext);
+        } catch (PublisherNotAvailableException e) {
+            handleException("Error while getting the publisher from pool ", e, messageContext);
         } finally {
             if (null != publisherContext) {
                 try {
