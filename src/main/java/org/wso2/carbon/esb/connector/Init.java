@@ -32,7 +32,6 @@ public class Init extends AbstractConnector {
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
         }
-
         if ((!JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) &&
                 (!JMSConnectorConstants.TOPIC_NAME_PREFIX.equals(destinationType))) {
             handleException("Invalid destination type. It must be a queue or a topic. Current value : " +

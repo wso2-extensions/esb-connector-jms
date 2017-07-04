@@ -31,7 +31,7 @@ import javax.naming.NamingException;
 import java.io.IOException;
 
 /**
- * JMS connector implementation.
+ * JMS connector send operation implementation.
  */
 public class JMSConnectorSendMessage extends AbstractConnector {
 
@@ -39,8 +39,8 @@ public class JMSConnectorSendMessage extends AbstractConnector {
     private static final Log log = LogFactory.getLog(JMSConnectorSendMessage.class);
 
     /**
-     * @param messageContext
-     * @throws ConnectException
+     * @param messageContext The message context
+     * @throws ConnectException The connection exception from esb mediator
      */
     @Override
     public void connect(MessageContext messageContext) throws ConnectException {
@@ -57,10 +57,9 @@ public class JMSConnectorSendMessage extends AbstractConnector {
                     destinationType, messageContext);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Processing message for destination : " + destinationType + " : " + destinationName + " with "
-                    + "connection factory : " + connectionFactoryName);
+            log.debug("Processing message for destination : " + destinationType + " : " + destinationName
+                    + " with connection factory : " + connectionFactoryName);
         }
-        //Interval at which the cache should expire (in seconds).
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
         }

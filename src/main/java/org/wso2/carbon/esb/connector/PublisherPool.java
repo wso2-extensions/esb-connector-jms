@@ -1,22 +1,18 @@
 /*
- *
- *  * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *  *
- *  * WSO2 Inc. licenses this file to you under the Apache License,
- *  * Version 2.0 (the "License"); you may not use this file except
- *  * in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *    http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an
- *  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  * KIND, either express or implied.  See the License for the
- *  * specific language governing permissions and limitations
- *  * under the License.
- *
- */
+* Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package org.wso2.carbon.esb.connector;
 
@@ -66,12 +62,12 @@ public class PublisherPool {
     private Lock lock = new ReentrantLock();
 
     /**
-     * @param destination
-     * @param destinationType
-     * @param connectionFactoryName
-     * @param maxPoolSize
-     * @param connectionFactoryValue
-     * @param namingFactory
+     * @param destination            The name of the queue/topic.
+     * @param destinationType        The message type queue/topic.
+     * @param connectionFactoryName  The name of the connection factory.
+     * @param maxPoolSize            The maximum connection size of pool.
+     * @param connectionFactoryValue URL of the JNDI provider.
+     * @param namingFactory          JNDI initial context factory class.
      */
     public PublisherPool(String destination, String destinationType, String connectionFactoryName, int maxPoolSize,
                          String connectionFactoryValue, String namingFactory) {
@@ -84,14 +80,13 @@ public class PublisherPool {
     }
 
     /**
-     * @return
-     * @throws JMSException
-     * @throws NamingException
-     * @throws IOException
-     * @throws PublisherNotAvailableException
+     * @return The publisher to publish the message
+     * @throws JMSException                   The JMXException
+     * @throws NamingException                The NamingException
+     * @throws PublisherNotAvailableException The PublisherNotAvailableException
      */
     public PublisherContext getPublisher()
-            throws JMSException, NamingException, IOException, PublisherNotAvailableException {
+            throws JMSException, NamingException, PublisherNotAvailableException {
         lock.lock();
         try {
             printDebugLog("Requesting publisher.");
@@ -119,8 +114,10 @@ public class PublisherPool {
     }
 
     /**
-     * @param publisher
-     * @throws JMSException
+     * Will release the publisher after the message published.
+     *
+     * @param publisher The publisher to be expired
+     * @throws JMSException The JMXException
      */
     public void releasePublisher(PublisherContext publisher) throws JMSException {
         lock.lock();
@@ -141,15 +138,16 @@ public class PublisherPool {
     }
 
     /**
-     * @return
+     * This method will check whether we can have more publisher or not.
+     *
+     * @return The boolean values whether can add publisher or not
      */
     public boolean canHaveMorePublishers() {
         return busyPublishers.size() + freePublishers.size() < maxSize;
     }
 
     /**
-     *
-     * @param message
+     * @param message The message to print
      */
     private void printDebugLog(String message) {
         if (log.isDebugEnabled()) {
@@ -159,7 +157,9 @@ public class PublisherPool {
     }
 
     /**
-     * @throws JMSException
+     * Will clear all publishers from publisherPool.
+     *
+     * @throws JMSException The JMXException
      */
     public void close() throws JMSException {
         printDebugLog("Destroying publisher pool");
