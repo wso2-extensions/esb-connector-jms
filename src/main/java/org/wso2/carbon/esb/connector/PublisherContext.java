@@ -49,15 +49,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class PublisherContext {
 
-    /**
-     * JNDI Prefix for topics.
-     */
-//    public static final String TOPIC_NAME_PREFIX = "topic";
-    /**
-     * JNDI Prefix for queues.
-     */
-//    public static final String QUEUE_NAME_PREFIX = "queue";
-
     private static final Log log = LogFactory.getLog(PublisherContext.class);
     /**
      * Properties read from the above file.
