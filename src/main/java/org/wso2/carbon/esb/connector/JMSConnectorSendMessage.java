@@ -28,13 +28,11 @@ import org.wso2.carbon.connector.core.ConnectException;
 
 import javax.jms.*;
 import javax.naming.NamingException;
-import java.io.IOException;
 
 /**
  * JMS connector send operation implementation.
  */
 public class JMSConnectorSendMessage extends AbstractConnector {
-
 
     private static final Log log = LogFactory.getLog(JMSConnectorSendMessage.class);
 
@@ -44,10 +42,10 @@ public class JMSConnectorSendMessage extends AbstractConnector {
      */
     @Override
     public void connect(MessageContext messageContext) throws ConnectException {
-        String destinationName = (String) messageContext.getProperty(JMSConnectorConstants.Destination_Name);
-        String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.Destination_Type);
+        String destinationName = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_NAME);
+        String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_TYPE);
         String connectionFactoryName = (String) messageContext
-                .getProperty(JMSConnectorConstants.Connection_Factory_Name);
+                .getProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME);
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
         }

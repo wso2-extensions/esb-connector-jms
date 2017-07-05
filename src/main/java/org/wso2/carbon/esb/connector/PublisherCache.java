@@ -70,7 +70,6 @@ public class PublisherCache {
             }
             CacheManager cacheManager = Caching.getCacheManagerFactory().getCacheManager(CACHE_MANAGER_KEY);
             isCacheInitialized.getAndSet(true);
-
             Cache<String, PublisherPool> cache = cacheManager.<String, PublisherPool>createCacheBuilder(cacheName)
                     .setExpiry(CacheConfiguration.ExpiryType.MODIFIED,
                             new CacheConfiguration.Duration(TimeUnit.SECONDS, cacheExpirationInterval))

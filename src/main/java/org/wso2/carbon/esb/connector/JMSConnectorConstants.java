@@ -19,13 +19,13 @@ import javax.xml.namespace.QName;
 
 public class JMSConnectorConstants {
 
-    public static final String Destination_Name = "destinationName";
-    public static final String Connection_Pool_Size = "connectionPoolSize";
-    public static final String Cache_Expiration_Interval = "cacheExpirationInterval";
-    public static final String Destination_Type = "destinationType";
-    public static final String Connection_Factory_Name = "connectionFactoryName";
-    public static final String NamingFactory = "namingFactory";
-    public static final String ConnectionFactoryValue = "connectionFactoryValue";
+    public static final String DESTINATION_NAME = "destinationName";
+    public static final String CONNECTION_POOL_SIZE = "connectionPoolSize";
+    public static final String CACHE_EXPIRATION_INTERVAL = "cacheExpirationInterval";
+    public static final String DESTINATION_TYPE = "destinationType";
+    public static final String CONNECTION_FACTORY_NAME = "connectionFactoryName";
+    public static final String NAMING_FACTORY = "namingFactory";
+    public static final String CONNECTION_FACTORY_VALUE = "connectionFactoryValue";
     public static final String JMS_MESSAGE_TYPE = "JMS_MESSAGE_TYPE";
     public static final String JMS_BYTE_MESSAGE = "JMS_BYTE_MESSAGE";
     public static final String HEADER_ACCEPT_MULTIPART_RELATED = "multipart/related";

@@ -20,7 +20,7 @@
     <component name="jms" package="org.wso2.carbon.esb.connector" >
         <dependency component="config" />
         <dependency component="Send" />
-        <description>wso2 Send connector library</description>
+        <description>JMS Message Producer</description>
     </component>
     <icon>icon/icon.png</icon>
 </connector>

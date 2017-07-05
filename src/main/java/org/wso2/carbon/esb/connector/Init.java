@@ -28,9 +28,9 @@ public class Init extends AbstractConnector {
 
     @Override
     public void connect(MessageContext messageContext) throws ConnectException {
-        String destinationName = (String) messageContext.getProperty(JMSConnectorConstants.Destination_Name);
-        String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.Destination_Type);
-        String connectionFactoryName = (String) messageContext.getProperty(JMSConnectorConstants.Connection_Factory_Name);
+        String destinationName = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_NAME);
+        String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_TYPE);
+        String connectionFactoryName = (String) messageContext.getProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME);
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
         }
@@ -48,13 +48,13 @@ public class Init extends AbstractConnector {
         if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
             synchronized (publisherCacheKey.intern()) {
                 if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
-                    String namingFactory = (String) messageContext.getProperty(JMSConnectorConstants.NamingFactory);
+                    String namingFactory = (String) messageContext.getProperty(JMSConnectorConstants.NAMING_FACTORY);
                     String connectionFactoryValue = (String) messageContext
-                            .getProperty(JMSConnectorConstants.ConnectionFactoryValue);
+                            .getProperty(JMSConnectorConstants.CONNECTION_FACTORY_VALUE);
                     int cacheExpirationInterval = Integer.parseInt((String) messageContext
-                            .getProperty(JMSConnectorConstants.Cache_Expiration_Interval));
+                            .getProperty(JMSConnectorConstants.CACHE_EXPIRATION_INTERVAL));
                     int connectionPoolSize = Integer.parseInt((String) messageContext
-                            .getProperty(JMSConnectorConstants.Connection_Pool_Size));
+                            .getProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE));
                     PublisherCache.setCacheExpirationInterval(cacheExpirationInterval);
                     log.info("JMS Publisher pool cache miss for destination : " + destinationName);
                     PublisherCache.getJMSPublisherPoolCache().put(publisherCacheKey,

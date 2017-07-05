@@ -19,11 +19,23 @@
     <parameter name="connectionFactoryName"/>
     <parameter name="destinationType"/>
     <parameter name="destinationName"/>
+    <parameter name="jmsMessageType"/>
+    <parameter name="jtaCommitAfterSend"/>
+    <parameter name="jmsDeliveryMode"/>
+    <parameter name="jmsPriority"/>
+    <parameter name="timeToLive"/>
+    <parameter name="CorrelationID"/>
     <sequence>
         <property name="connectionFactoryName" expression="$func:connectionFactoryName"/>
         <property name="destinationType" expression="$func:destinationType"/>
         <property name="destinationName" expression="$func:destinationName"/>
-        <class name="org.wso2.carbon.esb.connector.JMSConnectorSendMessage">
-        </class>
+        <property name="JMS_MESSAGE_TYPE" expression="$func:jmsMessageType"/>
+        <property name="JTA_COMMIT_AFTER_SEND" expression="$func:jtaCommitAfterSend"/>
+        <property name="JMS_DELIVERY_MODE" expression="$func:jmsDeliveryMode"/>
+        <property name="JMS_PRIORITY" expression="$func:jmsPriority"/>
+        <property name="JMS_TIME_TO_LIVE" expression="$func:timeToLive"/>
+        <property name="JMS_COORELATION_ID" expression="$func:CorrelationID"/>
+
+        <class name="org.wso2.carbon.esb.connector.JMSConnectorSendMessage"/>
     </sequence>
 </template>
