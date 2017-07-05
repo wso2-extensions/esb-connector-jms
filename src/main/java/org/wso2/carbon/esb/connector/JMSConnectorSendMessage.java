@@ -51,6 +51,9 @@ public class JMSConnectorSendMessage extends AbstractConnector {
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
         }
+        if (StringUtils.isBlank(connectionFactoryName)) {
+            handleException("ConnectionFactoryName can not be empty.", messageContext);
+        }
         if ((!JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) &&
                 (!JMSConnectorConstants.TOPIC_NAME_PREFIX.equals(destinationType))) {
             handleException("Invalid destination type. It must be a queue or a topic. Current value : " +
@@ -60,13 +63,11 @@ public class JMSConnectorSendMessage extends AbstractConnector {
             log.debug("Processing message for destination : " + destinationType + " : " + destinationName
                     + " with connection factory : " + connectionFactoryName);
         }
-        if (StringUtils.isBlank(destinationName)) {
-            handleException("Could not find a valid topic name to publish the message.", messageContext);
-        }
         PublisherPool publisherPool;
         PublisherContext publisherContext = null;
-        //TODO key should be the combination of destinationType, destinationName,ConnectionFactoryName,tenantID
-        String publisherCacheKey = destinationType + ":/" + destinationName;
+        String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
+                .get(JMSConnectorConstants.TENANT_ID));
+        String publisherCacheKey = tenantID + connectionFactoryName + destinationType + ":/" + destinationName;
         publisherPool = PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey);
         if (null == publisherPool) {
             handleException("Pool cannot be empty please create a connection pool", messageContext);
@@ -85,8 +86,6 @@ public class JMSConnectorSendMessage extends AbstractConnector {
             }
         } catch (AxisFault e) {
             handleException("AxisFault : ", e, messageContext);
-        } catch (IOException e) {
-            handleException("IOException : " + e, messageContext);
         } catch (NamingException e) {
             handleException("NamingException : ", e, messageContext);
         } catch (PublisherNotAvailableException e) {

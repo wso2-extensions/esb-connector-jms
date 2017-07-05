@@ -417,7 +417,6 @@ public class PublisherContext {
         Boolean persistent = getBooleanProperty(msgCtx, JMSConnectorConstants.JMS_DELIVERY_MODE);
         Integer priority = getIntegerProperty(msgCtx, JMSConnectorConstants.JMS_PRIORITY);
         Integer timeToLive = getIntegerProperty(msgCtx, JMSConnectorConstants.JMS_TIME_TO_LIVE);
-
         if (persistent != null) {
             try {
                 messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -442,7 +441,6 @@ public class PublisherContext {
         boolean sendingSuccessful = false;
         // perform actual message sending
         try {
-
             if (JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) {
                 try {
                     ((QueueSender) messageProducer).send(message);
@@ -468,13 +466,12 @@ public class PublisherContext {
             }
             sendingSuccessful = true;
             if (log.isDebugEnabled()) {
-                log.debug("Sent Message Context ID : " + msgCtx.getMessageID() +
-                        " with JMS Message ID : " + msgId +
-                        " to destination : " + messageProducer.getDestination());
+                log.debug("Sent Message Context ID : " + msgCtx.getMessageID() + " with JMS Message ID : " + msgId
+                        + " to destination : " + messageProducer.getDestination());
             }
         } catch (JMSException e) {
-            handleException("Error sending message with MessageContext ID : " +
-                    msgCtx.getMessageID() + " to destination " + destinationType + " : " + destinationName, e);
+            handleException("Error sending message with MessageContext ID : " + msgCtx.getMessageID()
+                    + " to destination " + destinationType + " : " + destinationName, e);
         } finally {
             if (jtaCommit != null) {
                 UserTransaction userTransaction = (UserTransaction) msgCtx.getProperty(JMSConnectorConstants.USER_TRANSACTION);
