@@ -65,7 +65,7 @@ public class JMSConnector extends AbstractConnector {
         PublisherContext publisherContext = null;
         String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
                 .get(JMSConnectorConstants.TENANT_ID));
-        String publisherCacheKey = tenantID + connectionFactoryName + destinationType + ":/" + destinationName;
+        String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
         publisherPool = PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey);
         if (null == publisherPool) {
             handleException("Pool cannot be empty please create a connection pool", messageContext);

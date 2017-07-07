@@ -15,6 +15,8 @@ package org.wso2.carbon.esb.connector.jms;
 * limitations under the License.
 */
 
+import scala.util.parsing.combinator.testing.Str;
+
 import javax.xml.namespace.QName;
 
 public class JMSConnectorConstants {
@@ -26,19 +28,21 @@ public class JMSConnectorConstants {
     public static final String CONNECTION_FACTORY_NAME = "connectionFactoryName";
     public static final String NAMING_FACTORY = "namingFactory";
     public static final String CONNECTION_FACTORY_VALUE = "connectionFactoryValue";
-    public static final String JMS_MESSAGE_TYPE = "JMS_MESSAGE_TYPE";
-    public static final String JMS_BYTE_MESSAGE = "JMS_BYTE_MESSAGE";
+    public static final String MESSAGE_TYPE = "JMS_MESSAGE_TYPE";
+    public static final String BYTE_MESSAGE = "JMS_BYTE_MESSAGE";
     public static final String HEADER_ACCEPT_MULTIPART_RELATED = "multipart/related";
-    public static final String JMS_TEXT_MESSAGE = "JMS_TEXT_MESSAGE";
-    public static final String JMS_MAP_MESSAGE = "JMS_MAP_MESSAGE";
-    public static final String JMS_COORELATION_ID = "JMS_COORELATION_ID";
-    public static final String JMS_DELIVERY_MODE = "JMS_DELIVERY_MODE";
-    public static final String JMS_PRIORITY = "JMS_PRIORITY";
-    public static final String JMS_TIME_TO_LIVE = "JMS_TIME_TO_LIVE";
-    public static final String JMS_MESSAGE_ID = "JMS_MESSAGE_ID";
-
+    public static final String TEXT_MESSAGE = "JMS_TEXT_MESSAGE";
+    public static final String MAP_MESSAGE = "JMS_MAP_MESSAGE";
+    public static final String COORELATION_ID = "JMS_COORELATION_ID";
+    public static final String DELIVERY_MODE = "JMS_DELIVERY_MODE";
+    public static final String PRIORITY = "JMS_PRIORITY";
+    public static final String TIME_TO_LIVE = "JMS_TIME_TO_LIVE";
+    public static final String MESSAGE_ID = "JMS_MESSAGE_ID";
+    public static final String TRANSPORT_HEADERS = "TRANSPORT_HEADERS";
     public static final String TOPIC_NAME_PREFIX = "topic";
     public static final String QUEUE_NAME_PREFIX = "queue";
+    public static final String EXPIRATION = "JMS_EXPIRATION";
+    public static final String TIMESTAMP = "JMS_TIMESTAMP";
 
     public static final String TENANT_ID = "tenant.info.id";
     public static final String SOAPACTION = "SOAPAction";
@@ -47,11 +51,12 @@ public class JMSConnectorConstants {
     public static final QName DEFAULT_TEXT_WRAPPER = new QName("http://ws.apache.org/commons/ns/payload",
             "text");
     public static final String USER_TRANSACTION = "UserTransaction";
+    //A message level property indicating a commit is required after the next immidiate send over a transport
     public static final String JTA_COMMIT_AFTER_SEND = "JTA_COMMIT_AFTER_SEND";
 
     public static final String LOCAL_CACHE_PREFIX = "$__local__$.";
 
-    public static final QName JMS_MAP_QNAME =
+    public static final QName MAP_QNAME =
             new QName("http://axis.apache.org/axis2/java/transports/jms/map-payload", "JMSMap",
                     "");
 

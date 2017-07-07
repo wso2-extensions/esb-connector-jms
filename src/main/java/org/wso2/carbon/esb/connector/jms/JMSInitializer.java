@@ -50,7 +50,7 @@ public class JMSInitializer extends AbstractConnector {
         String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
                 .get(JMSConnectorConstants.TENANT_ID));
         //TODO
-        String publisherCacheKey = tenantID + connectionFactoryName + destinationType + ":/" + destinationName;
+        String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
         if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
             synchronized (publisherCacheKey.intern()) {
                 if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {

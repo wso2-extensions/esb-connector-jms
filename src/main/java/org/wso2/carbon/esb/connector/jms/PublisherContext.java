@@ -23,9 +23,7 @@ import org.apache.axiom.om.OMText;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.MessageContext;
 import org.apache.axis2.transport.MessageFormatter;
-//import org.apache.axis2.transport.base.BaseConstants;
 import org.apache.axis2.transport.base.BaseUtils;
-import org.apache.axis2.transport.jms.JMSUtils;
 import org.apache.axis2.transport.jms.iowrappers.BytesMessageOutputStream;
 import org.apache.axis2.util.MessageProcessorSelector;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -40,6 +38,8 @@ import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
 import java.io.*;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -98,7 +98,7 @@ public class PublisherContext {
     /**
      * Message Producer used within the above JMS session.
      */
-    private MessageProducer messageProducer;
+    public MessageProducer messageProducer;
 
     /**
      * Initialize the PublisherContext for a specific destination planning to use a pre-defined JMS connection factory.
@@ -291,7 +291,7 @@ public class PublisherContext {
      */
     private Message createJMSMessage(MessageContext msgContext) throws JMSException, AxisFault {
         Message message = null;
-        String msgType = getProperty(msgContext, JMSConnectorConstants.JMS_MESSAGE_TYPE);
+        String msgType = getProperty(msgContext, JMSConnectorConstants.MESSAGE_TYPE);
 
         // check the first element of the SOAP body, do we have content wrapped using the
         // default wrapper elements for binary (BaseConstants.DEFAULT_BINARY_WRAPPER) or
@@ -308,7 +308,7 @@ public class PublisherContext {
                 throw new JMSException("Unable to get the message formatter to use");
             }
             String contentType = messageFormatter.getContentType(msgContext, format, msgContext.getSoapAction());
-            boolean useBytesMessage = msgType != null && JMSConnectorConstants.JMS_BYTE_MESSAGE.equals(msgType) ||
+            boolean useBytesMessage = msgType != null && JMSConnectorConstants.BYTE_MESSAGE.equals(msgType) ||
                     contentType.contains(JMSConnectorConstants.HEADER_ACCEPT_MULTIPART_RELATED);
             OutputStream out;
             StringWriter sw;
@@ -337,7 +337,7 @@ public class PublisherContext {
                 txtMsg.setText(sw.toString());
                 message = txtMsg;
             }
-        } else if (JMSConnectorConstants.JMS_BYTE_MESSAGE.equals(jmsPayloadType)) {
+        } else if (JMSConnectorConstants.BYTE_MESSAGE.equals(jmsPayloadType)) {
             message = session.createBytesMessage();
             BytesMessage bytesMsg = (BytesMessage) message;
             OMElement wrapper = msgContext.getEnvelope().getBody().
@@ -354,18 +354,18 @@ public class PublisherContext {
                     }
                 }
             }
-        } else if (JMSConnectorConstants.JMS_TEXT_MESSAGE.equals(jmsPayloadType)) {
+        } else if (JMSConnectorConstants.TEXT_MESSAGE.equals(jmsPayloadType)) {
             message = session.createTextMessage();
             TextMessage txtMsg = (TextMessage) message;
             txtMsg.setText(msgContext.getEnvelope().getBody().
                     getFirstChildWithName(JMSConnectorConstants.DEFAULT_TEXT_WRAPPER).getText());
-        } else if (JMSConnectorConstants.JMS_MAP_MESSAGE.equalsIgnoreCase(jmsPayloadType)) {
+        } else if (JMSConnectorConstants.MAP_MESSAGE.equalsIgnoreCase(jmsPayloadType)) {
             message = session.createMapMessage();
-            JMSUtils.convertXMLtoJMSMap(msgContext.getEnvelope().getBody().getFirstChildWithName(
-                    JMSConnectorConstants.JMS_MAP_QNAME), (MapMessage) message);
+            convertXMLtoJMSMap(msgContext.getEnvelope().getBody().getFirstChildWithName(
+                    JMSConnectorConstants.MAP_QNAME), (MapMessage) message);
         }
         // set the JMS correlation ID if specified
-        String correlationId = getProperty(msgContext, JMSConnectorConstants.JMS_COORELATION_ID);
+        String correlationId = getProperty(msgContext, JMSConnectorConstants.COORELATION_ID);
         if (correlationId == null && msgContext.getRelatesTo() != null) {
             correlationId = msgContext.getRelatesTo().getValue();
         }
@@ -383,8 +383,90 @@ public class PublisherContext {
                 message.setStringProperty(JMSConnectorConstants.SOAPACTION, action);
             }
         }
-        JMSUtils.setTransportHeaders(msgContext, message);
+        setTransportHeaders(msgContext, message);
         return message;
+    }
+
+    /**
+     * @param element
+     * @param message
+     * @throws JMSException
+     */
+    public static void convertXMLtoJMSMap(OMElement element, MapMessage message) throws JMSException {
+        Iterator itr = element.getChildElements();
+        while (itr.hasNext()) {
+            OMElement elem = (OMElement) itr.next();
+            message.setString(elem.getLocalName(), elem.getText());
+        }
+
+    }
+
+    /**
+     * @param msgContext
+     * @param message
+     * @throws JMSException
+     */
+    public static void setTransportHeaders(MessageContext msgContext, Message message) throws JMSException {
+        Map headerMap = (Map) msgContext.getProperty(JMSConnectorConstants.TRANSPORT_HEADERS);
+        if (headerMap != null) {
+            Iterator i$ = headerMap.keySet().iterator();
+            while (true) {
+                String name;
+                do {
+                    if (!i$.hasNext()) {
+                        return;
+                    }
+                    Object headerName = i$.next();
+                    name = (String) headerName;
+                } while (name.startsWith("JMSX") && !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq"));
+
+                if (JMSConnectorConstants.COORELATION_ID.equals(name)) {
+                    message.setJMSCorrelationID((String) headerMap.get(JMSConnectorConstants.COORELATION_ID));
+                } else {
+                    Object value;
+                    if (JMSConnectorConstants.DELIVERY_MODE.equals(name)) {
+                        value = headerMap.get(JMSConnectorConstants.DELIVERY_MODE);
+                        if (value instanceof Integer) {
+                            message.setJMSDeliveryMode(((Integer) value).intValue());
+                        } else if (value instanceof String) {
+                            try {
+                                message.setJMSDeliveryMode(Integer.parseInt((String) value));
+                            } catch (NumberFormatException var8) {
+                                log.warn("Invalid delivery mode ignored : " + value, var8);
+                            }
+                        } else {
+                            log.warn("Invalid delivery mode ignored : " + value);
+                        }
+                    } else if (JMSConnectorConstants.EXPIRATION.equals(name)) {
+                        message.setJMSExpiration(Long.parseLong((String) headerMap
+                                .get(JMSConnectorConstants.EXPIRATION)));
+                    } else if (JMSConnectorConstants.MESSAGE_ID.equals(name)) {
+                        message.setJMSMessageID((String) headerMap.get(JMSConnectorConstants.MESSAGE_ID));
+                    } else if (JMSConnectorConstants.PRIORITY.equals(name)) {
+                        message.setJMSPriority(Integer.parseInt((String) headerMap.get(JMSConnectorConstants.PRIORITY)));
+                    } else if (JMSConnectorConstants.TIMESTAMP.equals(name)) {
+                        message.setJMSTimestamp(Long.parseLong((String) headerMap.get(JMSConnectorConstants.TIMESTAMP)));
+                    } else if (JMSConnectorConstants.MESSAGE_TYPE.equals(name)) {
+                        message.setJMSType((String) headerMap.get(JMSConnectorConstants.MESSAGE_TYPE));
+                    } else {
+                        value = headerMap.get(name);
+                        if (value instanceof String) {
+                            message.setStringProperty(name, (String) value);
+                        } else if (value instanceof Boolean) {
+                            message.setBooleanProperty(name, ((Boolean) value).booleanValue());
+                        } else if (value instanceof Integer) {
+                            message.setIntProperty(name, ((Integer) value).intValue());
+                        } else if (value instanceof Long) {
+                            message.setLongProperty(name, ((Long) value).longValue());
+                        } else if (value instanceof Double) {
+                            message.setDoubleProperty(name, ((Double) value).doubleValue());
+                        } else if (value instanceof Float) {
+                            message.setFloatProperty(name, ((Float) value).floatValue());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -397,11 +479,11 @@ public class PublisherContext {
         OMElement firstChild = msgContext.getEnvelope().getBody().getFirstElement();
         if (firstChild != null) {
             if (JMSConnectorConstants.DEFAULT_BINARY_WRAPPER.equals(firstChild.getQName())) {
-                return JMSConnectorConstants.JMS_BYTE_MESSAGE;
+                return JMSConnectorConstants.BYTE_MESSAGE;
             } else if (JMSConnectorConstants.DEFAULT_TEXT_WRAPPER.equals(firstChild.getQName())) {
-                return JMSConnectorConstants.JMS_TEXT_MESSAGE;
-            } else if (JMSConnectorConstants.JMS_MAP_QNAME.equals(firstChild.getQName())) {
-                return JMSConnectorConstants.JMS_MAP_MESSAGE;
+                return JMSConnectorConstants.TEXT_MESSAGE;
+            } else if (JMSConnectorConstants.MAP_QNAME.equals(firstChild.getQName())) {
+                return JMSConnectorConstants.MAP_MESSAGE;
             }
         }
         return null;
@@ -416,9 +498,9 @@ public class PublisherContext {
     private void send(Message message, MessageContext msgCtx) throws AxisFault {
         publisherLock.lock();
         Boolean jtaCommit = getBooleanProperty(msgCtx, JMSConnectorConstants.JTA_COMMIT_AFTER_SEND);
-        Boolean persistent = getBooleanProperty(msgCtx, JMSConnectorConstants.JMS_DELIVERY_MODE);
-        Integer priority = getIntegerProperty(msgCtx, JMSConnectorConstants.JMS_PRIORITY);
-        Integer timeToLive = getIntegerProperty(msgCtx, JMSConnectorConstants.JMS_TIME_TO_LIVE);
+        Boolean persistent = getBooleanProperty(msgCtx, JMSConnectorConstants.DELIVERY_MODE);
+        Integer priority = getIntegerProperty(msgCtx, JMSConnectorConstants.PRIORITY);
+        Integer timeToLive = getIntegerProperty(msgCtx, JMSConnectorConstants.TIME_TO_LIVE);
         if (persistent != null) {
             try {
                 messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -462,7 +544,7 @@ public class PublisherContext {
             try {
                 msgId = message.getJMSMessageID();
                 if (msgId != null) {
-                    msgCtx.setProperty(JMSConnectorConstants.JMS_MESSAGE_ID, msgId);
+                    msgCtx.setProperty(JMSConnectorConstants.MESSAGE_ID, msgId);
                 }
             } catch (JMSException ignore) {
             }
@@ -476,7 +558,8 @@ public class PublisherContext {
                     + " to destination " + destinationType + " : " + destinationName, e);
         } finally {
             if (jtaCommit != null) {
-                UserTransaction userTransaction = (UserTransaction) msgCtx.getProperty(JMSConnectorConstants.USER_TRANSACTION);
+                UserTransaction userTransaction = (UserTransaction) msgCtx
+                        .getProperty(JMSConnectorConstants.USER_TRANSACTION);
                 if (userTransaction != null) {
                     try {
                         if (sendingSuccessful && jtaCommit) {
@@ -486,8 +569,7 @@ public class PublisherContext {
                         }
                         msgCtx.removeProperty(JMSConnectorConstants.USER_TRANSACTION);
                         if (log.isDebugEnabled()) {
-                            log.debug((sendingSuccessful ? "Committed" : "Rolled back") +
-                                    " JTA Transaction");
+                            log.debug((sendingSuccessful ? "Committed" : "Rolled back") + " JTA Transaction");
                         }
                     } catch (Exception e) {
                         handleException("Error committing/rolling back JTA transaction after " +
