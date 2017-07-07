@@ -14,13 +14,11 @@
 * limitations under the License.
 */
 
-package org.wso2.carbon.esb.connector;
+package org.wso2.carbon.esb.connector.jms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import scala.util.parsing.combinator.testing.Str;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;

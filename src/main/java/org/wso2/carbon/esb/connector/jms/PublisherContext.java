@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package org.wso2.carbon.esb.connector;
+package org.wso2.carbon.esb.connector.jms;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMNode;
@@ -240,6 +240,7 @@ public class PublisherContext {
         String contextKey = destinationType + ":/" + destinationName;
         connection.setExceptionListener(new JMSExceptionListener(contextKey));
         session = ((QueueConnection) connection).createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+        //TODO pool for sessions
         Queue queue = (Queue) initialJMSContext.lookup(destinationName);
         messageProducer = ((QueueSession) session).createSender(queue);
         destination = queue;
@@ -274,6 +275,7 @@ public class PublisherContext {
      */
     public void publishMessage(MessageContext messageContext) throws AxisFault, JMSException {
         if (null != session && null != messageProducer) {
+
             Message messageToPublish = createJMSMessage(messageContext);
             send(messageToPublish, messageContext);
         }

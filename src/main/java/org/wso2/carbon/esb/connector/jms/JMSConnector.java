@@ -15,7 +15,7 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package org.wso2.carbon.esb.connector;
+package org.wso2.carbon.esb.connector.jms;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.lang.StringUtils;
@@ -32,9 +32,9 @@ import javax.naming.NamingException;
 /**
  * JMS connector send operation implementation.
  */
-public class JMSConnectorSendMessage extends AbstractConnector {
+public class JMSConnector extends AbstractConnector {
 
-    private static final Log log = LogFactory.getLog(JMSConnectorSendMessage.class);
+    private static final Log log = LogFactory.getLog(JMSConnector.class);
 
     /**
      * @param messageContext The message context

@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package org.wso2.carbon.esb.connector;
+package org.wso2.carbon.esb.connector.jms;
 
 public class PublisherNotAvailableException extends Exception {
 

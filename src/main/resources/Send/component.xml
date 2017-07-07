@@ -18,8 +18,8 @@
 -->
 <component name="Send" type="synapse/template" >
     <subComponents> 
-		<component name="SendJMS" >
-	    		<file>SendJMS.xml</file>
+		<component name="publishMessages" >
+	    		<file>publishMessages.xml</file>
 	    		<description>Send wso2 connector method</description>
 		</component>			
     </subComponents>    

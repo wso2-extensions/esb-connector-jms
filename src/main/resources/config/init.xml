@@ -32,6 +32,6 @@
         <property name="cacheExpirationInterval" expression="$func:cacheExpirationInterval"/>
         <property name="connectionPoolSize" expression="$func:connectionPoolSize"/>
         <property name="destinationName" expression="$func:destinationName"/>
-        <class name="org.wso2.carbon.esb.connector.Init"/>
+        <class name="org.wso2.carbon.esb.connector.jms.JMSInitializer"/>
     </sequence>
 </template>

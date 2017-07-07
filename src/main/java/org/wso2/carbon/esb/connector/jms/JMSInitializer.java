@@ -1,4 +1,4 @@
-package org.wso2.carbon.esb.connector;
+package org.wso2.carbon.esb.connector.jms;
 /*
 * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
@@ -23,13 +23,15 @@ import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
 
-public class Init extends AbstractConnector {
-    private static final Log log = LogFactory.getLog(Init.class);
+public class JMSInitializer extends AbstractConnector {
+    private static final Log log = LogFactory.getLog(JMSInitializer.class);
 
+    //TODO integration test
     @Override
     public void connect(MessageContext messageContext) throws ConnectException {
         String destinationName = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_NAME);
         String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_TYPE);
+        //TODO change the name
         String connectionFactoryName = (String) messageContext.getProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME);
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
@@ -42,8 +44,12 @@ public class Init extends AbstractConnector {
             handleException("Invalid destination type. It must be a queue or a topic. Current value : " +
                     destinationType, messageContext);
         }
+        int cacheExpirationInterval = Integer.parseInt((String) messageContext
+                .getProperty(JMSConnectorConstants.CACHE_EXPIRATION_INTERVAL));
+        PublisherCache.setCacheExpirationInterval(cacheExpirationInterval);
         String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
                 .get(JMSConnectorConstants.TENANT_ID));
+        //TODO
         String publisherCacheKey = tenantID + connectionFactoryName + destinationType + ":/" + destinationName;
         if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
             synchronized (publisherCacheKey.intern()) {
@@ -51,11 +57,8 @@ public class Init extends AbstractConnector {
                     String namingFactory = (String) messageContext.getProperty(JMSConnectorConstants.NAMING_FACTORY);
                     String connectionFactoryValue = (String) messageContext
                             .getProperty(JMSConnectorConstants.CONNECTION_FACTORY_VALUE);
-                    int cacheExpirationInterval = Integer.parseInt((String) messageContext
-                            .getProperty(JMSConnectorConstants.CACHE_EXPIRATION_INTERVAL));
                     int connectionPoolSize = Integer.parseInt((String) messageContext
                             .getProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE));
-                    PublisherCache.setCacheExpirationInterval(cacheExpirationInterval);
                     log.info("JMS Publisher pool cache miss for destination : " + destinationName);
                     PublisherCache.getJMSPublisherPoolCache().put(publisherCacheKey,
                             new PublisherPool(destinationName, destinationType, connectionFactoryName,
