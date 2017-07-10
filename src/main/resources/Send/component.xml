@@ -16,10 +16,10 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<component name="Send" type="synapse/template" >
+<component name="publish" type="synapse/template" >
     <subComponents> 
-		<component name="publishMessages" >
-	    		<file>publishMessages.xml</file>
+		<component name="publishMessage" >
+	    		<file>publishMessage.xml</file>
 	    		<description>Send wso2 connector method</description>
 		</component>			
     </subComponents>    

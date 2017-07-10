@@ -47,7 +47,6 @@ public class JMSInitializer extends AbstractConnector {
         PublisherCache.setCacheExpirationInterval(cacheExpirationInterval);
         String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
                 .get(JMSConnectorConstants.TENANT_ID));
-        //TODO
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
         if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
             synchronized (publisherCacheKey.intern()) {

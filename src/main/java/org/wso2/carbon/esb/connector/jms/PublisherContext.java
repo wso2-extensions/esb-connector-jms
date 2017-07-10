@@ -86,10 +86,7 @@ public class PublisherContext {
      * Network connection used to communicate with message broker.
      */
     private Connection connection;
-    /**
-     * JMS Destination object as lookup from JNDI context.
-     */
-    private Destination destination;
+
     /**
      * JMS Session used to communicate with message broker.
      */
@@ -98,7 +95,7 @@ public class PublisherContext {
     /**
      * Message Producer used within the above JMS session.
      */
-    public MessageProducer messageProducer;
+    private MessageProducer messageProducer;
 
     /**
      * Initialize the PublisherContext for a specific destination planning to use a pre-defined JMS connection factory.
@@ -157,7 +154,7 @@ public class PublisherContext {
      *
      * @param msg description of error
      * @param e   Exception
-     * @throws AxisFault
+     * @throws AxisFault The AxisFault exception
      */
     private static void handleException(String msg, Exception e) throws AxisFault {
         log.error(msg, e);
@@ -215,9 +212,6 @@ public class PublisherContext {
 
     /**
      * Create the JNDI properties for the JMS communication within the connector.
-     *
-     * @throws NamingException
-     * @throws IOException
      */
     private void initializeJNDIProperties() {
         jndiProperties = new Properties();
@@ -226,8 +220,8 @@ public class PublisherContext {
     }
 
     /**
-     * @throws NamingException
-     * @throws JMSException
+     * @throws NamingException The NamingException
+     * @throws JMSException    The JMSException
      */
     private void initializeQueueProducer() throws NamingException, JMSException {
         if (!jndiProperties.containsKey(JMSConnectorConstants.QUEUE_NAME_PREFIX + "." + destinationName)) {
@@ -240,15 +234,13 @@ public class PublisherContext {
         String contextKey = destinationType + ":/" + destinationName;
         connection.setExceptionListener(new JMSExceptionListener(contextKey));
         session = ((QueueConnection) connection).createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
-        //TODO pool for sessions
         Queue queue = (Queue) initialJMSContext.lookup(destinationName);
         messageProducer = ((QueueSession) session).createSender(queue);
-        destination = queue;
     }
 
     /**
-     * @throws NamingException
-     * @throws JMSException
+     * @throws NamingException The NamingException
+     * @throws JMSException The JMSException
      */
     private void initializeTopicProducer() throws NamingException, JMSException {
         if (!jndiProperties.containsKey(JMSConnectorConstants.TOPIC_NAME_PREFIX + "." + destinationName)) {
@@ -263,15 +255,14 @@ public class PublisherContext {
         session = ((TopicConnection) connection).createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
         Topic topic = (Topic) initialJMSContext.lookup(destinationName);
         messageProducer = ((TopicSession) session).createPublisher(topic);
-        destination = topic;
     }
 
     /**
      * Method exposed to publish a message using this JMS context (session, connection).
      *
      * @param messageContext synapse message context
-     * @throws AxisFault
-     * @throws JMSException
+     * @throws AxisFault The AxisFault
+     * @throws JMSException The JMSException
      */
     public void publishMessage(MessageContext messageContext) throws AxisFault, JMSException {
         if (null != session && null != messageProducer) {
@@ -387,9 +378,9 @@ public class PublisherContext {
     }
 
     /**
-     * @param element
-     * @param message
-     * @throws JMSException
+     * @param element The OMElement
+     * @param message The MapMessage
+     * @throws JMSException The JMSException
      */
     public static void convertXMLtoJMSMap(OMElement element, MapMessage message) throws JMSException {
         Iterator itr = element.getChildElements();
@@ -401,9 +392,9 @@ public class PublisherContext {
     }
 
     /**
-     * @param msgContext
-     * @param message
-     * @throws JMSException
+     * @param msgContext The MessageContext
+     * @param message The Message
+     * @throws JMSException The JMSException
      */
     public static void setTransportHeaders(MessageContext msgContext, Message message) throws JMSException {
         Map headerMap = (Map) msgContext.getProperty(JMSConnectorConstants.TRANSPORT_HEADERS);
@@ -605,7 +596,7 @@ public class PublisherContext {
      * Method to properly shutdown the JMS sessions and connections in the proper order. This is normally called when
      * a cached publisherContext expires.
      *
-     * @throws JMSException
+     * @throws JMSException The JMSException
      */
     public void close() throws JMSException {
         if (null != messageProducer) {
@@ -622,10 +613,10 @@ public class PublisherContext {
         }
     }
 
-    @Override
     /**
      *
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof PublisherContext) {
             if (((PublisherContext) obj).publisherLock == this.publisherLock)
@@ -634,10 +625,10 @@ public class PublisherContext {
         return false;
     }
 
-    @Override
     /**
      * In case cache expiry does not happen, the GC collection should trigger the shutdown of the context.
      */
+    @Override
     protected void finalize() throws Throwable {
         close();
         super.finalize();

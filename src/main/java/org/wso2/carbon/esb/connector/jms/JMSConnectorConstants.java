@@ -15,7 +15,6 @@ package org.wso2.carbon.esb.connector.jms;
 * limitations under the License.
 */
 
-import scala.util.parsing.combinator.testing.Str;
 
 import javax.xml.namespace.QName;
 

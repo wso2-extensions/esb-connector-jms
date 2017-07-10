@@ -140,7 +140,7 @@ public class PublisherPool {
      *
      * @return The boolean values whether can add publisher or not
      */
-    public boolean canHaveMorePublishers() {
+    private boolean canHaveMorePublishers() {
         return busyPublishers.size() + freePublishers.size() < maxSize;
     }
 

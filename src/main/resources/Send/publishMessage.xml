@@ -15,7 +15,7 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<template xmlns="http://ws.apache.org/ns/synapse" name="publishMessages">
+<template xmlns="http://ws.apache.org/ns/synapse" name="publishMessage">
     <parameter name="jmsMessageType"/>
     <parameter name="jtaCommitAfterSend"/>
     <parameter name="jmsDeliveryMode"/>
