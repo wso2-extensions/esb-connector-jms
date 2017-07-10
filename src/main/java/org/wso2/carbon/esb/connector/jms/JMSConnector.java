@@ -46,17 +46,6 @@ public class JMSConnector extends AbstractConnector {
         String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_TYPE);
         String connectionFactoryName = (String) messageContext
                 .getProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME);
-        if (StringUtils.isBlank(destinationName)) {
-            handleException("Could not find a valid topic name to publish the message.", messageContext);
-        }
-        if (StringUtils.isBlank(connectionFactoryName)) {
-            handleException("ConnectionFactoryName can not be empty.", messageContext);
-        }
-        if ((!JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) &&
-                (!JMSConnectorConstants.TOPIC_NAME_PREFIX.equals(destinationType))) {
-            handleException("Invalid destination type. It must be a queue or a topic. Current value : " +
-                    destinationType, messageContext);
-        }
         if (log.isDebugEnabled()) {
             log.debug("Processing message for destination : " + destinationType + " : " + destinationName
                     + " with connection factory : " + connectionFactoryName);
@@ -77,7 +66,9 @@ public class JMSConnector extends AbstractConnector {
             }
         } catch (JMSException e) {
             try {
-                publisherPool.close();
+                if (publisherContext != null) {
+                    publisherContext.close();
+                }
             } catch (JMSException e1) {
                 handleException("JMSException while trying clear publisher connections due to failover : ", e,
                         messageContext);

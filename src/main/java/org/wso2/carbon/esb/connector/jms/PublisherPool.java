@@ -90,10 +90,6 @@ public class PublisherPool {
             printDebugLog("Requesting publisher.");
             if (freePublishers.size() > 0) {
                 PublisherContext publisher = freePublishers.remove(0);
-                if (publisher.messageProducer.getTimeToLive() < 30) {
-                    publisher.close();
-                    publisher = getPublisher();
-                }
                 busyPublishers.add(publisher);
                 printDebugLog("Returning an existing free publisher with hash : " + publisher);
                 return publisher;

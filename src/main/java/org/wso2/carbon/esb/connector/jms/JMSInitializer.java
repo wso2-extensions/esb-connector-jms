@@ -26,12 +26,10 @@ import org.wso2.carbon.connector.core.ConnectException;
 public class JMSInitializer extends AbstractConnector {
     private static final Log log = LogFactory.getLog(JMSInitializer.class);
 
-    //TODO integration test
     @Override
     public void connect(MessageContext messageContext) throws ConnectException {
         String destinationName = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_NAME);
         String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_TYPE);
-        //TODO change the name
         String connectionFactoryName = (String) messageContext.getProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME);
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);

@@ -35,11 +35,11 @@ public class PublisherCache {
     /**
      * Cache Name
      */
-    private static final String CACHE_KEY = "PublisherPoolCache";
+    private static final String CACHE_KEY = "JMSConnectorCache";
     /**
      * Name of CacheManager holding the cache
      */
-    private static final String CACHE_MANAGER_KEY = CACHE_KEY + "Manager";
+    private static final String CACHE_MANAGER_KEY = CACHE_KEY + "CacheManager";
     /**
      * Listener to handle removal/expiration of a cached entry
      */

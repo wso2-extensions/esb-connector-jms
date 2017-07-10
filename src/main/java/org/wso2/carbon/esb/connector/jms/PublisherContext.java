@@ -231,9 +231,9 @@ public class PublisherContext {
      */
     private void initializeQueueProducer() throws NamingException, JMSException {
         if (!jndiProperties.containsKey(JMSConnectorConstants.QUEUE_NAME_PREFIX + "." + destinationName)) {
-            log.warn("Queue not defined in default jndi.properties !");
             jndiProperties.put(JMSConnectorConstants.QUEUE_NAME_PREFIX + "." + destinationName, destinationName);
         }
+        log.info("new connection");
         InitialContext initialJMSContext = new InitialContext(jndiProperties);
         connectionFactory = (QueueConnectionFactory) initialJMSContext.lookup(connectionFactoryName);
         connection = ((QueueConnectionFactory) connectionFactory).createQueueConnection();
@@ -275,7 +275,6 @@ public class PublisherContext {
      */
     public void publishMessage(MessageContext messageContext) throws AxisFault, JMSException {
         if (null != session && null != messageProducer) {
-
             Message messageToPublish = createJMSMessage(messageContext);
             send(messageToPublish, messageContext);
         }
@@ -515,6 +514,7 @@ public class PublisherContext {
                 handleException("Error setting JMS Producer priority to : " + priority, e);
             }
         }
+
         if (timeToLive != null) {
             try {
                 messageProducer.setTimeToLive(timeToLive);
@@ -527,6 +527,7 @@ public class PublisherContext {
         try {
             if (JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) {
                 try {
+
                     ((QueueSender) messageProducer).send(message);
                 } catch (JMSException e) {
                     //create a queue reference in MB before publishing.

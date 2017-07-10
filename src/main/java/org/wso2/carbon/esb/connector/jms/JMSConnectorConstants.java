@@ -51,7 +51,7 @@ public class JMSConnectorConstants {
     public static final QName DEFAULT_TEXT_WRAPPER = new QName("http://ws.apache.org/commons/ns/payload",
             "text");
     public static final String USER_TRANSACTION = "UserTransaction";
-    //A message level property indicating a commit is required after the next immidiate send over a transport
+    //A message level property indicating a commit is required after the next immediate send over a transport
     public static final String JTA_COMMIT_AFTER_SEND = "JTA_COMMIT_AFTER_SEND";
 
     public static final String LOCAL_CACHE_PREFIX = "$__local__$.";
@@ -59,5 +59,4 @@ public class JMSConnectorConstants {
     public static final QName MAP_QNAME =
             new QName("http://axis.apache.org/axis2/java/transports/jms/map-payload", "JMSMap",
                     "");
-
 }
