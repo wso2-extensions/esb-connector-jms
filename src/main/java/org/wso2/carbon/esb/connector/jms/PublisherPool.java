@@ -18,11 +18,9 @@ package org.wso2.carbon.esb.connector.jms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.synapse.MessageContext;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.jms.JMSException;
 import javax.naming.NamingException;
 
@@ -34,81 +32,82 @@ public class PublisherPool {
 
     private static final Log log = LogFactory.getLog(PublisherPool.class);
 
+//    private static PublisherPool jmsConnectionPool = null;
+
+
     /**
      * Maximum number of connections allowed in a single pool meant for a single destination.
      */
     private final int maxSize;
-
     private String destination;
     private String destinationType;
     private String connectionFactoryName;
-    private String connectionFactoryValue;
-    private String namingFactory;
+    private String javaNamingProviderUrl;
+    private String javaNamingFactoryInitial;
+    private String username;
+    private String password;
     /**
      * Will maintain already created and available connections upto the max limit
      */
-    private List<PublisherContext> freePublishers = new ArrayList<PublisherContext>();
+    private java.util.Queue<PublisherContext> freePublishers;
+
+//    /**
+//     * Get single instance of ConnectionPool.
+//     *
+//     * @return the connection pool manger
+//     */
+//    public static PublisherPool getInstance() {
+//        if (jmsConnectionPool == null) {
+//            synchronized (PublisherPool.class) {
+//                if (jmsConnectionPool == null) {
+//                    jmsConnectionPool =new ConcurrentLinkedQueue<PublisherContext>();
+//                }
+//            }
+//        }
+//        return jmsConnectionPool;
+//    }
+
 
     /**
-     * Will maintain connections currently in use and upto the max limit.
-     */
-    private List<PublisherContext> busyPublishers = new ArrayList<PublisherContext>();
-
-    /**
-     * Lock to ensure that freePublishers and busyPublishers collections are updated consistently.
-     */
-    private Lock lock = new ReentrantLock();
-
-    /**
-     * @param destination            The name of the queue/topic.
-     * @param destinationType        The message type queue/topic.
-     * @param connectionFactoryName  The name of the connection factory.
-     * @param maxPoolSize            The maximum connection size of pool.
-     * @param connectionFactoryValue URL of the JNDI provider.
-     * @param namingFactory          JNDI initial context factory class.
+     * @param destination              The name of the queue/topic.
+     * @param destinationType          The message type queue/topic.
+     * @param connectionFactoryName    The name of the connection factory.
+     * @param maxPoolSize              The maximum connection size of pool.
+     * @param javaNamingProviderUrl    URL of the JNDI provider.
+     * @param javaNamingFactoryInitial JNDI initial context factory class.
+     * @param username
+     * @param password
      */
     public PublisherPool(String destination, String destinationType, String connectionFactoryName, int maxPoolSize,
-                         String connectionFactoryValue, String namingFactory) {
+                         String javaNamingProviderUrl, String javaNamingFactoryInitial, String username, String password) {
         this.destination = destination;
         this.destinationType = destinationType;
         this.connectionFactoryName = connectionFactoryName;
         this.maxSize = maxPoolSize;
-        this.connectionFactoryValue = connectionFactoryValue;
-        this.namingFactory = namingFactory;
+        this.javaNamingProviderUrl = javaNamingProviderUrl;
+        this.javaNamingFactoryInitial = javaNamingFactoryInitial;
+        this.username = username;
+        this.password = password;
+        this.freePublishers = new ConcurrentLinkedQueue<PublisherContext>();
     }
 
     /**
      * @return The publisher to publish the message
-     * @throws JMSException                   The JMXException
-     * @throws NamingException                The NamingException
-     * @throws PublisherNotAvailableException The PublisherNotAvailableException
+     * @throws JMSException    The JMXException
+     * @throws NamingException The NamingException
      */
-    public PublisherContext getPublisher()
-            throws JMSException, NamingException, PublisherNotAvailableException {
-        lock.lock();
-        try {
-            printDebugLog("Requesting publisher.");
-            if (freePublishers.size() > 0) {
-                PublisherContext publisher = freePublishers.remove(0);
-                busyPublishers.add(publisher);
-                printDebugLog("Returning an existing free publisher with hash : " + publisher);
-                return publisher;
-            } else if (canHaveMorePublishers()) {
-                PublisherContext publisher = new PublisherContext(destination, connectionFactoryName, destinationType,
-                        connectionFactoryValue, namingFactory);
-                busyPublishers.add(publisher);
-                printDebugLog("Created and returning a whole new publisher for destination with hash : " + publisher);
-                return publisher;
-            } else {
-                log.warn("The Publisher pool is fully utilized." + " destination : " + destinationType + ":"
-                        + destination + ", free publishers : " + freePublishers.size() + ", busy publishers : "
-                        + busyPublishers.size());
-            }
-        } finally {
-            lock.unlock();
+    public PublisherContext getPublisher() throws JMSException, NamingException {
+        printDebugLog("Requesting publisher.");
+        PublisherContext publisher = freePublishers.poll();
+        if (publisher != null) {
+            printDebugLog("Returning an existing free publisher with hash : " + publisher);
+            return publisher;
+        } else {
+            publisher = new PublisherContext(destination, connectionFactoryName, destinationType,
+                    javaNamingProviderUrl, javaNamingFactoryInitial,username,password);
+            printDebugLog("Created and returning a new publisher for destination with hash : " + publisher);
+            return publisher;
         }
-        throw new PublisherNotAvailableException(destinationType, destination, freePublishers.size(),
-                busyPublishers.size());
     }
 
     /**
@@ -118,30 +117,15 @@ public class PublisherPool {
      * @throws JMSException The JMXException
      */
     public void releasePublisher(PublisherContext publisher) throws JMSException {
-        lock.lock();
-        try {
-            printDebugLog("Releasing Publisher : " + publisher);
-            busyPublishers.remove(publisher);
-            printDebugLog("Removed publisher from busy pool.");
-            if (canHaveMorePublishers()) {
-                freePublishers.add(publisher);
-                printDebugLog("Added publisher back to free pool.");
-            } else {
-                printDebugLog("Destroying publisher because we have reached maximum size of publisher pool.");
-                publisher.close();
-            }
-        } finally {
-            lock.unlock();
+        printDebugLog("Releasing Publisher : " + publisher);
+        if (freePublishers.size() < maxSize) {
+            freePublishers.add(publisher);
+            printDebugLog("Added publisher back to free pool.");
+        } else {
+            freePublishers.poll().close();
+            freePublishers.add(publisher);
+            printDebugLog("Destroying publisher because we have reached maximum size of publisher pool.");
         }
-    }
-
-    /**
-     * This method will check whether we can have more publisher or not.
-     *
-     * @return The boolean values whether can add publisher or not
-     */
-    private boolean canHaveMorePublishers() {
-        return busyPublishers.size() + freePublishers.size() < maxSize;
     }
 
     /**
@@ -150,7 +134,7 @@ public class PublisherPool {
     private void printDebugLog(String message) {
         if (log.isDebugEnabled()) {
             log.debug(message + " destination : " + destinationType + ":" + destination + ", free publishers : " +
-                    freePublishers.size() + ", busy publishers : " + busyPublishers.size());
+                    freePublishers.size());
         }
     }
 
@@ -161,18 +145,18 @@ public class PublisherPool {
      */
     public void close() throws JMSException {
         printDebugLog("Destroying publisher pool");
-        lock.lock();
-        try {
-            for (PublisherContext freePublisher : freePublishers) {
-                freePublisher.close();
-            }
-            for (PublisherContext busyPublisher : busyPublishers) {
-                busyPublisher.close();
-            }
-            freePublishers.clear();
-            busyPublishers.clear();
-        } finally {
-            lock.unlock();
+        for (PublisherContext freePublisher : freePublishers) {
+            freePublisher.close();
         }
+        freePublishers.clear();
+    }
+
+    /**
+     * In case cache expiry does not happen, the GC collection should trigger the shutdown of the context.
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        close();
+        super.finalize();
     }
 }

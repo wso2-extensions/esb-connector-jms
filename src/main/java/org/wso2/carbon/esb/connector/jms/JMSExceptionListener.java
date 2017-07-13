@@ -45,13 +45,6 @@ public class JMSExceptionListener implements ExceptionListener {
     public void onException(JMSException e) {
         synchronized (publisherCacheKey.intern()) {
             log.error("Cache will be cleared due to JMSException for destination : " + publisherCacheKey, e);
-            PublisherPool publisherPool = PublisherCache.getJMSPublisherPoolCache().getAndRemove(publisherCacheKey);
-            try {
-                publisherPool.close();
-            } catch (JMSException e1) {
-                log.error("Error while trying to remove obsolete publisher pool for : " + publisherCacheKey, e1);
-            }
-            log.error("Cache has been cleared to a JMSException for destination : " + publisherCacheKey, e);
         }
     }
 }

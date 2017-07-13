@@ -20,7 +20,7 @@
     <subComponents> 
 		<component name="publishMessage" >
 	    		<file>publishMessage.xml</file>
-	    		<description>Send wso2 connector method</description>
+	    		<description>publish wso2 connector method</description>
 		</component>			
     </subComponents>    
 </component>

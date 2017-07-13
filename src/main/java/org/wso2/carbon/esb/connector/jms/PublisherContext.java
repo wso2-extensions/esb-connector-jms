@@ -57,7 +57,7 @@ public class PublisherContext {
     /**
      *
      */
-    private final String connectionFactoryValue;
+    private final String javaNamingProviderUrl;
     /**
      * Object-wise lock to synchronize publishing to the same topic.
      */
@@ -65,7 +65,7 @@ public class PublisherContext {
     /**
      * Connection Factory type specific to message broker
      */
-    private String namingFactory;
+    private String javaNamingFactoryInitial;
     /**
      * Name of destination.
      */
@@ -97,24 +97,32 @@ public class PublisherContext {
      */
     private MessageProducer messageProducer;
 
+
+    private String username;
+
+    private String password;
+
     /**
      * Initialize the PublisherContext for a specific destination planning to use a pre-defined JMS connection factory.
      *
-     * @param destinationName        Name of topic
-     * @param connectionFactoryName  Name of JMS connection factory as defined in jndi.properties file.
-     * @param connectionFactoryValue URL of the JNDI provider.
-     * @throws NamingException if the jndi processing results in an invalid naming convention or non-existent
-     *                         properties.
-     * @throws JMSException    Connectivity issues, invalid destination type
+     * @param destinationName       Name of topic
+     * @param connectionFactoryName Name of JMS connection factory as defined in jndi.properties file.
+     * @param javaNamingProviderUrl URL of the JNDI provider.
+     * @param username The username.
+     * @param password              The password.
+     * @throws NamingException if the jndi processing results in an invalid naming convention or non-existent properties.
+     * @throws JMSException Connectivity issues, invalid destination type
      */
     public PublisherContext(String destinationName, String connectionFactoryName, String destinationType,
-                            String connectionFactoryValue, String namingFactory)
+                            String javaNamingProviderUrl, String javaNamingFactoryInitial, String username, String password)
             throws JMSException, NamingException {
         this.destinationName = destinationName;
         this.connectionFactoryName = connectionFactoryName;
         this.destinationType = destinationType;
-        this.connectionFactoryValue = connectionFactoryValue;
-        this.namingFactory = namingFactory;
+        this.javaNamingProviderUrl = javaNamingProviderUrl;
+        this.javaNamingFactoryInitial = javaNamingFactoryInitial;
+        this.username = username;
+        this.password = password;
         if (null == jndiProperties) {
             initializeJNDIProperties();
         }
@@ -138,7 +146,7 @@ public class PublisherContext {
      * @param msgCtx  Message context
      * @param key     key for the property
      */
-    private static void setProperty(Message message, MessageContext msgCtx, String key) {
+    private void setProperty(Message message, MessageContext msgCtx, String key) {
         String value = getProperty(msgCtx, key);
         if (value != null) {
             try {
@@ -156,7 +164,7 @@ public class PublisherContext {
      * @param e   Exception
      * @throws AxisFault The AxisFault exception
      */
-    private static void handleException(String msg, Exception e) throws AxisFault {
+    private void handleException(String msg, Exception e) throws AxisFault {
         log.error(msg, e);
         throw new AxisFault(msg, e);
     }
@@ -168,7 +176,7 @@ public class PublisherContext {
      * @param key key
      * @return Value of property
      */
-    private static String getProperty(MessageContext mc, String key) {
+    private String getProperty(MessageContext mc, String key) {
         return (String) mc.getProperty(key);
     }
 
@@ -179,7 +187,7 @@ public class PublisherContext {
      * @param name   key of property
      * @return value of property
      */
-    private static Integer getIntegerProperty(MessageContext msgCtx, String name) {
+    private Integer getIntegerProperty(MessageContext msgCtx, String name) {
         Object o = msgCtx.getProperty(name);
         if (o != null) {
             if (o instanceof Integer) {
@@ -198,7 +206,7 @@ public class PublisherContext {
      * @param name   key of property
      * @return value of property
      */
-    private static Boolean getBooleanProperty(MessageContext msgCtx, String name) {
+    private Boolean getBooleanProperty(MessageContext msgCtx, String name) {
         Object o = msgCtx.getProperty(name);
         if (o != null) {
             if (o instanceof Boolean) {
@@ -215,8 +223,8 @@ public class PublisherContext {
      */
     private void initializeJNDIProperties() {
         jndiProperties = new Properties();
-        jndiProperties.put("connectionfactory." + connectionFactoryName, connectionFactoryValue);
-        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY, namingFactory);
+        jndiProperties.put("connectionfactory." + connectionFactoryName, javaNamingProviderUrl);
+        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY, javaNamingFactoryInitial);
     }
 
     /**
@@ -230,7 +238,11 @@ public class PublisherContext {
         log.info("new connection");
         InitialContext initialJMSContext = new InitialContext(jndiProperties);
         connectionFactory = (QueueConnectionFactory) initialJMSContext.lookup(connectionFactoryName);
-        connection = ((QueueConnectionFactory) connectionFactory).createQueueConnection();
+        if (username != null && password != null) {
+            connection = ((QueueConnectionFactory) connectionFactory).createQueueConnection(username, password);
+        } else {
+            connection = ((QueueConnectionFactory) connectionFactory).createQueueConnection();
+        }
         String contextKey = destinationType + ":/" + destinationName;
         connection.setExceptionListener(new JMSExceptionListener(contextKey));
         session = ((QueueConnection) connection).createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
@@ -240,7 +252,7 @@ public class PublisherContext {
 
     /**
      * @throws NamingException The NamingException
-     * @throws JMSException The JMSException
+     * @throws JMSException    The JMSException
      */
     private void initializeTopicProducer() throws NamingException, JMSException {
         if (!jndiProperties.containsKey(JMSConnectorConstants.TOPIC_NAME_PREFIX + "." + destinationName)) {
@@ -249,7 +261,11 @@ public class PublisherContext {
         }
         InitialContext initialJMSContext = new InitialContext(jndiProperties);
         connectionFactory = (TopicConnectionFactory) initialJMSContext.lookup(connectionFactoryName);
-        connection = ((TopicConnectionFactory) connectionFactory).createTopicConnection();
+        if (username != null && password != null) {
+            connection = ((TopicConnectionFactory) connectionFactory).createTopicConnection(username, password);
+        } else {
+            connection = ((TopicConnectionFactory) connectionFactory).createTopicConnection();
+        }
         String contextKey = destinationType + ":/" + destinationName;
         connection.setExceptionListener(new JMSExceptionListener(contextKey));
         session = ((TopicConnection) connection).createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
@@ -261,7 +277,7 @@ public class PublisherContext {
      * Method exposed to publish a message using this JMS context (session, connection).
      *
      * @param messageContext synapse message context
-     * @throws AxisFault The AxisFault
+     * @throws AxisFault    The AxisFault
      * @throws JMSException The JMSException
      */
     public void publishMessage(MessageContext messageContext) throws AxisFault, JMSException {
@@ -282,7 +298,6 @@ public class PublisherContext {
     private Message createJMSMessage(MessageContext msgContext) throws JMSException, AxisFault {
         Message message = null;
         String msgType = getProperty(msgContext, JMSConnectorConstants.MESSAGE_TYPE);
-
         // check the first element of the SOAP body, do we have content wrapped using the
         // default wrapper elements for binary (BaseConstants.DEFAULT_BINARY_WRAPPER) or
         // text (BaseConstants.DEFAULT_TEXT_WRAPPER) ? If so, do not create SOAP messages
@@ -382,21 +397,20 @@ public class PublisherContext {
      * @param message The MapMessage
      * @throws JMSException The JMSException
      */
-    public static void convertXMLtoJMSMap(OMElement element, MapMessage message) throws JMSException {
+    private void convertXMLtoJMSMap(OMElement element, MapMessage message) throws JMSException {
         Iterator itr = element.getChildElements();
         while (itr.hasNext()) {
             OMElement elem = (OMElement) itr.next();
             message.setString(elem.getLocalName(), elem.getText());
         }
-
     }
 
     /**
      * @param msgContext The MessageContext
-     * @param message The Message
+     * @param message    The Message
      * @throws JMSException The JMSException
      */
-    public static void setTransportHeaders(MessageContext msgContext, Message message) throws JMSException {
+    private void setTransportHeaders(MessageContext msgContext, Message message) throws JMSException {
         Map headerMap = (Map) msgContext.getProperty(JMSConnectorConstants.TRANSPORT_HEADERS);
         if (headerMap != null) {
             Iterator i$ = headerMap.keySet().iterator();
@@ -409,7 +423,6 @@ public class PublisherContext {
                     Object headerName = i$.next();
                     name = (String) headerName;
                 } while (name.startsWith("JMSX") && !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq"));
-
                 if (JMSConnectorConstants.COORELATION_ID.equals(name)) {
                     message.setJMSCorrelationID((String) headerMap.get(JMSConnectorConstants.COORELATION_ID));
                 } else {
@@ -486,7 +499,6 @@ public class PublisherContext {
      * @param msgCtx  the Axis2 MessageContext
      */
     private void send(Message message, MessageContext msgCtx) throws AxisFault {
-        publisherLock.lock();
         Boolean jtaCommit = getBooleanProperty(msgCtx, JMSConnectorConstants.JTA_COMMIT_AFTER_SEND);
         Boolean persistent = getBooleanProperty(msgCtx, JMSConnectorConstants.DELIVERY_MODE);
         Integer priority = getIntegerProperty(msgCtx, JMSConnectorConstants.PRIORITY);
@@ -518,7 +530,6 @@ public class PublisherContext {
         try {
             if (JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) {
                 try {
-
                     ((QueueSender) messageProducer).send(message);
                 } catch (JMSException e) {
                     //create a queue reference in MB before publishing.
@@ -588,7 +599,6 @@ public class PublisherContext {
                             msgCtx.getMessageID() + " to destination : " + destinationName, e);
                 }
             }
-            publisherLock.unlock();
         }
     }
 
@@ -611,18 +621,6 @@ public class PublisherContext {
         if (null != connectionFactory) {
             connectionFactory = null;
         }
-    }
-
-    /**
-     *
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof PublisherContext) {
-            if (((PublisherContext) obj).publisherLock == this.publisherLock)
-                return true;
-        }
-        return false;
     }
 
     /**

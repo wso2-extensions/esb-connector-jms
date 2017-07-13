@@ -18,20 +18,24 @@
 -->
 <template name="init" onError="fault" xmlns="http://ws.apache.org/ns/synapse">
     <parameter name="connectionFactoryName"/>
-    <parameter name="connectionFactoryValue"/>
+    <parameter name="javaNamingProviderUrl"/>
     <parameter name="destinationType"/>
     <parameter name="cacheExpirationInterval"/>
     <parameter name="connectionPoolSize"/>
     <parameter name="destinationName"/>
-    <parameter name="namingFactory"/>
+    <parameter name="javaNamingFactoryInitial"/>
+    <parameter name="username"/>
+    <parameter name="password"/>
     <sequence>
         <property name="connectionFactoryName" expression="$func:connectionFactoryName"/>
-        <property name="connectionFactoryValue" expression="$func:connectionFactoryValue"/>
-        <property name="namingFactory" expression="$func:namingFactory"/>
+        <property name="javaNamingProviderUrl" expression="$func:javaNamingProviderUrl"/>
+        <property name="javaNamingFactoryInitial" expression="$func:javaNamingFactoryInitial"/>
         <property name="destinationType" expression="$func:destinationType"/>
         <property name="cacheExpirationInterval" expression="$func:cacheExpirationInterval"/>
         <property name="connectionPoolSize" expression="$func:connectionPoolSize"/>
         <property name="destinationName" expression="$func:destinationName"/>
+        <property name="jms_username" expression="$func:username"/>
+        <property name="jms_password" expression="$func:password"/>
         <class name="org.wso2.carbon.esb.connector.jms.JMSInitializer"/>
     </sequence>
 </template>

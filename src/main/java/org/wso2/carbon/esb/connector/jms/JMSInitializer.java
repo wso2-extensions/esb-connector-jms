@@ -30,7 +30,16 @@ public class JMSInitializer extends AbstractConnector {
     public void connect(MessageContext messageContext) throws ConnectException {
         String destinationName = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_NAME);
         String destinationType = (String) messageContext.getProperty(JMSConnectorConstants.DESTINATION_TYPE);
-        String connectionFactoryName = (String) messageContext.getProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME);
+        String connectionFactoryName = (String) messageContext
+                .getProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME);
+        String javaNamingFactoryInitial = (String) messageContext
+                .getProperty(JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL);
+        String javaNamingProviderUrl = (String) messageContext
+                .getProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL);
+        int connectionPoolSize = Integer.parseInt((String) messageContext
+                .getProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE));
+        String username = (String) messageContext.getProperty(JMSConnectorConstants.USERNAME);
+        String password = (String) messageContext.getProperty(JMSConnectorConstants.PASSWORD);
         if (StringUtils.isBlank(destinationName)) {
             handleException("Could not find a valid topic name to publish the message.", messageContext);
         }
@@ -42,24 +51,19 @@ public class JMSInitializer extends AbstractConnector {
             handleException("Invalid destination type. It must be a queue or a topic. Current value : " +
                     destinationType, messageContext);
         }
-        int cacheExpirationInterval = Integer.parseInt((String) messageContext
-                .getProperty(JMSConnectorConstants.CACHE_EXPIRATION_INTERVAL));
-        PublisherCache.setCacheExpirationInterval(cacheExpirationInterval);
+        JMSPublisherPoolManager jmsPublisherPoolManager = new JMSPublisherPoolManager();
         String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
                 .get(JMSConnectorConstants.TENANT_ID));
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
-        if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
+        if (null == jmsPublisherPoolManager.getPoolFromMap(publisherCacheKey)) {
             synchronized (publisherCacheKey.intern()) {
-                if (null == PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey)) {
-                    String namingFactory = (String) messageContext.getProperty(JMSConnectorConstants.NAMING_FACTORY);
-                    String connectionFactoryValue = (String) messageContext
-                            .getProperty(JMSConnectorConstants.CONNECTION_FACTORY_VALUE);
-                    int connectionPoolSize = Integer.parseInt((String) messageContext
-                            .getProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE));
-                    log.info("JMS Publisher pool cache miss for destination : " + destinationName);
-                    PublisherCache.getJMSPublisherPoolCache().put(publisherCacheKey,
-                            new PublisherPool(destinationName, destinationType, connectionFactoryName,
-                                    connectionPoolSize, connectionFactoryValue, namingFactory));
+                if (null == jmsPublisherPoolManager.getPoolFromMap(publisherCacheKey)) {
+                    jmsPublisherPoolManager.addPoolToMap(publisherCacheKey, new PublisherPool(destinationName,
+                            destinationType, connectionFactoryName, connectionPoolSize, javaNamingProviderUrl,
+                            javaNamingFactoryInitial,username,password));
+                    if (log.isDebugEnabled()) {
+                        log.debug("JMS Publisher pool created for destination : " + destinationName);
+                    }
                 }
             }
         }

@@ -51,34 +51,34 @@ public class JMSConnector extends AbstractConnector {
         }
         PublisherPool publisherPool;
         PublisherContext publisherContext = null;
+        JMSPublisherPoolManager jmsPublisherPoolManager = new JMSPublisherPoolManager();
         String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
                 .get(JMSConnectorConstants.TENANT_ID));
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
-        publisherPool = PublisherCache.getJMSPublisherPoolCache().get(publisherCacheKey);
-        if (null == publisherPool) {
-            handleException("Pool cannot be empty please create a connection pool", messageContext);
-        }
+        publisherPool = jmsPublisherPoolManager.getPoolFromMap(publisherCacheKey);
         try {
-            publisherContext = publisherPool.getPublisher();
-            if (publisherContext != null) {
+            if (publisherPool != null) {
+                publisherContext = publisherPool.getPublisher();
                 publisherContext.publishMessage(((Axis2MessageContext) messageContext).getAxis2MessageContext());
-            }
-        } catch (JMSException e) {
-            try {
-                if (publisherContext != null) {
-                    publisherContext.close();
-                }
-            } catch (JMSException e1) {
-                handleException("JMSException while trying clear publisher connections due to failover : ", e,
-                        messageContext);
+            } else {
+                handleException("Pool cannot be empty please create a connection pool", messageContext);
             }
         } catch (AxisFault e) {
             handleException("AxisFault : ", e, messageContext);
         } catch (NamingException e) {
             handleException("NamingException : ", e, messageContext);
-        } catch (PublisherNotAvailableException e) {
-            handleException("Error while getting the publisher from pool ", e, messageContext);
-        } finally {
+        }
+        catch (JMSException e) {
+            try {
+                if (publisherContext != null) {
+                    publisherContext.close();
+                }
+            } catch (JMSException e1) {
+                handleException("JMSException while trying clear publisher connections due to failover : ", e1,
+                        messageContext);
+            }
+        }
+        finally {
             if (null != publisherContext) {
                 try {
                     publisherPool.releasePublisher(publisherContext);
@@ -87,6 +87,5 @@ public class JMSConnector extends AbstractConnector {
                 }
             }
         }
-
     }
 }
