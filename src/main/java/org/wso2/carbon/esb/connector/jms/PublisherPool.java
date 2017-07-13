@@ -32,9 +32,6 @@ public class PublisherPool {
 
     private static final Log log = LogFactory.getLog(PublisherPool.class);
 
-//    private static PublisherPool jmsConnectionPool = null;
-
-
     /**
      * Maximum number of connections allowed in a single pool meant for a single destination.
      */
@@ -50,23 +47,6 @@ public class PublisherPool {
      * Will maintain already created and available connections upto the max limit
      */
     private java.util.Queue<PublisherContext> freePublishers;
-
-//    /**
-//     * Get single instance of ConnectionPool.
-//     *
-//     * @return the connection pool manger
-//     */
-//    public static PublisherPool getInstance() {
-//        if (jmsConnectionPool == null) {
-//            synchronized (PublisherPool.class) {
-//                if (jmsConnectionPool == null) {
-//                    jmsConnectionPool =new ConcurrentLinkedQueue<PublisherContext>();
-//                }
-//            }
-//        }
-//        return jmsConnectionPool;
-//    }
-
 
     /**
      * @param destination              The name of the queue/topic.

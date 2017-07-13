@@ -20,6 +20,7 @@ package org.wso2.carbon.esb.connector.jms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.synapse.MessageContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,12 +31,31 @@ import java.util.Map;
 public class JMSPublisherPoolManager {
     private static Log log = LogFactory.getLog(JMSPublisherPoolManager.class);
 
-    private static Map<String, PublisherPool> publisherPoolManager = new HashMap<>();
+    private Map<String, PublisherPool> publisherPoolManager;
 
+    private static JMSPublisherPoolManager jmsPublisherPoolManager = null;
 
+    JMSPublisherPoolManager() {
+        publisherPoolManager = new HashMap<>();
+    }
 
     /**
+     * Get single instance of ConnectionPool.
      *
+     * @return the connection pool manger
+     */
+    public static JMSPublisherPoolManager getInstance() {
+        if (jmsPublisherPoolManager == null) {
+            synchronized (JMSPublisherPoolManager.class) {
+                if (jmsPublisherPoolManager == null) {
+                    jmsPublisherPoolManager = new JMSPublisherPoolManager();
+                }
+            }
+        }
+        return jmsPublisherPoolManager;
+    }
+
+    /**
      * @param publisherKey
      * @return
      */
@@ -44,7 +64,6 @@ public class JMSPublisherPoolManager {
     }
 
     /**
-     *
      * @param publisherKey
      * @param publisherPool
      */

@@ -51,11 +51,10 @@ public class JMSConnector extends AbstractConnector {
         }
         PublisherPool publisherPool;
         PublisherContext publisherContext = null;
-        JMSPublisherPoolManager jmsPublisherPoolManager = new JMSPublisherPoolManager();
         String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
                 .get(JMSConnectorConstants.TENANT_ID));
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
-        publisherPool = jmsPublisherPoolManager.getPoolFromMap(publisherCacheKey);
+        publisherPool = JMSPublisherPoolManager.getInstance().getPoolFromMap(publisherCacheKey);
         try {
             if (publisherPool != null) {
                 publisherContext = publisherPool.getPublisher();
@@ -67,8 +66,7 @@ public class JMSConnector extends AbstractConnector {
             handleException("AxisFault : ", e, messageContext);
         } catch (NamingException e) {
             handleException("NamingException : ", e, messageContext);
-        }
-        catch (JMSException e) {
+        } catch (JMSException e) {
             try {
                 if (publisherContext != null) {
                     publisherContext.close();
@@ -77,8 +75,7 @@ public class JMSConnector extends AbstractConnector {
                 handleException("JMSException while trying clear publisher connections due to failover : ", e1,
                         messageContext);
             }
-        }
-        finally {
+        } finally {
             if (null != publisherContext) {
                 try {
                     publisherPool.releasePublisher(publisherContext);

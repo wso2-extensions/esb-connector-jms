@@ -51,14 +51,13 @@ public class JMSInitializer extends AbstractConnector {
             handleException("Invalid destination type. It must be a queue or a topic. Current value : " +
                     destinationType, messageContext);
         }
-        JMSPublisherPoolManager jmsPublisherPoolManager = new JMSPublisherPoolManager();
         String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
                 .get(JMSConnectorConstants.TENANT_ID));
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
-        if (null == jmsPublisherPoolManager.getPoolFromMap(publisherCacheKey)) {
+        if (null == JMSPublisherPoolManager.getInstance().getPoolFromMap(publisherCacheKey)) {
             synchronized (publisherCacheKey.intern()) {
-                if (null == jmsPublisherPoolManager.getPoolFromMap(publisherCacheKey)) {
-                    jmsPublisherPoolManager.addPoolToMap(publisherCacheKey, new PublisherPool(destinationName,
+                if (null == JMSPublisherPoolManager.getInstance().getPoolFromMap(publisherCacheKey)) {
+                    JMSPublisherPoolManager.getInstance().addPoolToMap(publisherCacheKey, new PublisherPool(destinationName,
                             destinationType, connectionFactoryName, connectionPoolSize, javaNamingProviderUrl,
                             javaNamingFactoryInitial,username,password));
                     if (log.isDebugEnabled()) {
