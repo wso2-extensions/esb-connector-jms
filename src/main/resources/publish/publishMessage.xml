@@ -16,19 +16,22 @@
    under the License.
 -->
 <template xmlns="http://ws.apache.org/ns/synapse" name="publishMessage">
-    <parameter name="jmsMessageType"/>
-    <parameter name="jtaCommitAfterSend"/>
-    <parameter name="jmsDeliveryMode"/>
-    <parameter name="jmsPriority"/>
-    <parameter name="timeToLive"/>
-    <parameter name="correlationID"/>
+    <parameter name="messageType"/>
+    <parameter name="messageDeliveryMode"/>
+    <parameter name="messageCorrelationID"/>
+    <parameter name="messageId"/>
+    <parameter name="messageTimestamp"/>
+    <parameter name="messageExpiration"/>
+    <parameter name="messagePriority"/>
+
     <sequence>
-        <property name="JMS_MESSAGE_TYPE" expression="$func:jmsMessageType"/>
-        <property name="JTA_COMMIT_AFTER_SEND" expression="$func:jtaCommitAfterSend"/>
-        <property name="JMS_DELIVERY_MODE" expression="$func:jmsDeliveryMode"/>
-        <property name="JMS_PRIORITY" expression="$func:jmsPriority"/>
-        <property name="JMS_TIME_TO_LIVE" expression="$func:timeToLive"/>
-        <property name="JMS_COORELATION_ID" expression="$func:correlationID"/>
+        <property name="messageType" expression="$func:messageType"/>
+        <property name="messageDeliveryMode" expression="$func:messageDeliveryMode"/>
+        <property name="messageCorrelationID" expression="$func:messageCorrelationID"/>
+        <property name="messageId" expression="$func:messageId"/>
+        <property name="messageTimestamp" expression="$func:messageTimestamp"/>
+        <property name="messageExpiration" expression="$func:messageExpiration"/>
+        <property name="messagePriority" expression="$func:messagePriority"/>
         <class name="org.wso2.carbon.esb.connector.jms.JMSConnector"/>
     </sequence>
 </template>

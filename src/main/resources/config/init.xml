@@ -20,22 +20,26 @@
     <parameter name="connectionFactoryName"/>
     <parameter name="javaNamingProviderUrl"/>
     <parameter name="destinationType"/>
-    <parameter name="cacheExpirationInterval"/>
     <parameter name="connectionPoolSize"/>
     <parameter name="destinationName"/>
     <parameter name="javaNamingFactoryInitial"/>
     <parameter name="username"/>
     <parameter name="password"/>
+    <parameter name="priority"/>
+    <parameter name="deliveryMode"/>
+    <parameter name="timeToLive"/>
     <sequence>
-        <property name="connectionFactoryName" expression="$func:connectionFactoryName"/>
-        <property name="javaNamingProviderUrl" expression="$func:javaNamingProviderUrl"/>
-        <property name="javaNamingFactoryInitial" expression="$func:javaNamingFactoryInitial"/>
-        <property name="destinationType" expression="$func:destinationType"/>
-        <property name="cacheExpirationInterval" expression="$func:cacheExpirationInterval"/>
-        <property name="connectionPoolSize" expression="$func:connectionPoolSize"/>
-        <property name="destinationName" expression="$func:destinationName"/>
-        <property name="jms_username" expression="$func:username"/>
-        <property name="jms_password" expression="$func:password"/>
+        <property name="jmsConnectionFactoryName" expression="$func:connectionFactoryName"/>
+        <property name="jmsJavaNamingProviderUrl" expression="$func:javaNamingProviderUrl"/>
+        <property name="jmsJavaNamingFactoryInitial" expression="$func:javaNamingFactoryInitial"/>
+        <property name="jmsDestinationType" expression="$func:destinationType"/>
+        <property name="jmsConnectionPoolSize" expression="$func:connectionPoolSize"/>
+        <property name="jmsDestinationName" expression="$func:destinationName"/>
+        <property name="jmsUsername" expression="$func:username"/>
+        <property name="jmsPassword" expression="$func:password"/>
+        <property name="jmsPriority" expression="$func:priority"/>
+        <property name="jmsDeliveryMode" expression="$func:deliveryMode"/>
+        <property name="jmsTimeToLive" expression="$func:timeToLive"/>
         <class name="org.wso2.carbon.esb.connector.jms.JMSInitializer"/>
     </sequence>
 </template>

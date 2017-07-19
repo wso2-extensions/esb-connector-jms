@@ -17,19 +17,21 @@
 */
 package org.wso2.carbon.esb.connector.jms;
 
-import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.synapse.MessageContext;
 import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
+import org.wso2.carbon.context.CarbonContext;
 
-import javax.jms.*;
+import javax.jms.JMSException;
 import javax.naming.NamingException;
 
 /**
- * JMS connector send operation implementation.
+ * JMS connector publish operation implementation.
+ *
+ * @since 1.0.0
  */
 public class JMSConnector extends AbstractConnector {
 
@@ -49,39 +51,32 @@ public class JMSConnector extends AbstractConnector {
             log.debug("Processing message for destination : " + destinationType + " : " + destinationName
                     + " with connection factory : " + connectionFactoryName);
         }
-        PublisherPool publisherPool;
-        PublisherContext publisherContext = null;
-        String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
-                .get(JMSConnectorConstants.TENANT_ID));
+        JMSPublisherPool JMSPublisherPool;
+        JMSPublisher JMSPublisher = null;
+        String tenantID = String.valueOf(CarbonContext.getThreadLocalCarbonContext().getTenantId());
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
-        publisherPool = JMSPublisherPoolManager.getInstance().getPoolFromMap(publisherCacheKey);
+        JMSPublisherPool = JMSPublisherPoolManager.getPoolFromManager(publisherCacheKey);
         try {
-            if (publisherPool != null) {
-                publisherContext = publisherPool.getPublisher();
-                publisherContext.publishMessage(((Axis2MessageContext) messageContext).getAxis2MessageContext());
+            if (JMSPublisherPool != null) {
+                JMSPublisher = JMSPublisherPool.getPublisher();
+                JMSPublisher.publishMessage(((Axis2MessageContext) messageContext).getAxis2MessageContext());
             } else {
                 handleException("Pool cannot be empty please create a connection pool", messageContext);
             }
-        } catch (AxisFault e) {
-            handleException("AxisFault : ", e, messageContext);
         } catch (NamingException e) {
             handleException("NamingException : ", e, messageContext);
         } catch (JMSException e) {
             try {
-                if (publisherContext != null) {
-                    publisherContext.close();
+                if (JMSPublisher != null) {
+                    JMSPublisher.close();
                 }
             } catch (JMSException e1) {
                 handleException("JMSException while trying clear publisher connections due to failover : ", e1,
                         messageContext);
             }
         } finally {
-            if (null != publisherContext) {
-                try {
-                    publisherPool.releasePublisher(publisherContext);
-                } catch (JMSException e) {
-                    handleException("Error while releasing publisher after sending message : ", e, messageContext);
-                }
+            if (null != JMSPublisher) {
+                JMSPublisherPool.releasePublisher(JMSPublisher);
             }
         }
     }

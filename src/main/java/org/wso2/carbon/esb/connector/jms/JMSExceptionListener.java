@@ -1,5 +1,3 @@
-package org.wso2.carbon.esb.connector.jms;
-
 /*
 * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
@@ -15,10 +13,10 @@ package org.wso2.carbon.esb.connector.jms;
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package org.wso2.carbon.esb.connector.jms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 
@@ -45,6 +43,12 @@ public class JMSExceptionListener implements ExceptionListener {
     public void onException(JMSException e) {
         synchronized (publisherCacheKey.intern()) {
             log.error("Cache will be cleared due to JMSException for destination : " + publisherCacheKey, e);
+            JMSPublisherPoolManager jmsPublisherPoolManager = new JMSPublisherPoolManager();
+            try {
+                JMSPublisherPoolManager.getPoolFromManager(publisherCacheKey).close();
+            } catch (JMSException e1) {
+                log.error("Error while close the connections");
+            }
         }
     }
 }

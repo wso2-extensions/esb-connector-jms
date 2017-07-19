@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -18,56 +18,43 @@
 
 package org.wso2.carbon.esb.connector.jms;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.synapse.MessageContext;
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Connection pool for JMS producer connection.
+ * JMS connection pool manager.
  */
 public class JMSPublisherPoolManager {
-    private static Log log = LogFactory.getLog(JMSPublisherPoolManager.class);
 
-    private Map<String, PublisherPool> publisherPoolManager;
+    /**
+     * Will keep the publisher pools
+     */
+    private static Map<String, JMSPublisherPool> publisherPoolManager = null;
 
-    private static JMSPublisherPoolManager jmsPublisherPoolManager = null;
-
-    JMSPublisherPoolManager() {
-        publisherPoolManager = new HashMap<>();
+    /*
+      A static initializer is used to set up a class.
+     */
+    static {
+        publisherPoolManager = new ConcurrentHashMap<>();
     }
 
     /**
-     * Get single instance of ConnectionPool.
+     * Will get the publisher pool from the pool manager.
      *
-     * @return the connection pool manger
+     * @param publisherKey The publisher key.
+     * @return the publisher pool.
      */
-    public static JMSPublisherPoolManager getInstance() {
-        if (jmsPublisherPoolManager == null) {
-            synchronized (JMSPublisherPoolManager.class) {
-                if (jmsPublisherPoolManager == null) {
-                    jmsPublisherPoolManager = new JMSPublisherPoolManager();
-                }
-            }
-        }
-        return jmsPublisherPoolManager;
-    }
-
-    /**
-     * @param publisherKey
-     * @return
-     */
-    public PublisherPool getPoolFromMap(String publisherKey) {
+    public static JMSPublisherPool getPoolFromManager(String publisherKey) {
         return publisherPoolManager.get(publisherKey);
     }
 
     /**
-     * @param publisherKey
-     * @param publisherPool
+     * Will add the new pool to the pool manager.
+     *
+     * @param publisherKey     The publisher key.
+     * @param JMSPublisherPool The publisher pool.
      */
-    public void addPoolToMap(String publisherKey, PublisherPool publisherPool) {
-        publisherPoolManager.put(publisherKey, publisherPool);
+    public static void addPoolToManager(String publisherKey, JMSPublisherPool JMSPublisherPool) {
+        publisherPoolManager.putIfAbsent(publisherKey, JMSPublisherPool);
     }
 }

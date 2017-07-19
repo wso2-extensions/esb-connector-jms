@@ -1,4 +1,3 @@
-package org.wso2.carbon.esb.connector.jms;
 /*
 * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
@@ -14,15 +13,21 @@ package org.wso2.carbon.esb.connector.jms;
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package org.wso2.carbon.esb.connector.jms;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.synapse.MessageContext;
-import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
+import org.wso2.carbon.context.CarbonContext;
 
+/**
+ * JMS Connector initialization class implementation.
+ *
+ * @since 1.0.0
+ */
 public class JMSInitializer extends AbstractConnector {
     private static final Log log = LogFactory.getLog(JMSInitializer.class);
 
@@ -36,34 +41,36 @@ public class JMSInitializer extends AbstractConnector {
                 .getProperty(JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL);
         String javaNamingProviderUrl = (String) messageContext
                 .getProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL);
-        int connectionPoolSize = Integer.parseInt((String) messageContext
-                .getProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE));
         String username = (String) messageContext.getProperty(JMSConnectorConstants.USERNAME);
         String password = (String) messageContext.getProperty(JMSConnectorConstants.PASSWORD);
-        if (StringUtils.isBlank(destinationName)) {
-            handleException("Could not find a valid topic name to publish the message.", messageContext);
-        }
-        if (StringUtils.isBlank(connectionFactoryName)) {
-            handleException("ConnectionFactoryName can not be empty.", messageContext);
+        String connectionPoolSize = (String) messageContext.getProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE);
+        String deliveryMood = (String) messageContext.getProperty(JMSConnectorConstants.DELIVERY_MODE);
+        String priority = (String) messageContext.getProperty(JMSConnectorConstants.PRIORITY);
+        String timeToLive = (String) messageContext.getProperty(JMSConnectorConstants.TIME_TO_LIVE);
+
+        if (StringUtils.isEmpty(destinationName) || StringUtils.isEmpty(destinationType)
+                || StringUtils.isEmpty(connectionFactoryName) || StringUtils.isEmpty(javaNamingFactoryInitial)
+                || StringUtils.isEmpty(javaNamingProviderUrl) || StringUtils.isEmpty(connectionPoolSize)) {
+            handleException("Mandatory parameters cannot be null or empty. destinationName:" + destinationName +
+                    " destinationType:" + destinationType + " connectionFactoryName:" + connectionFactoryName
+                    + " javaNamingFactoryInitial:" + javaNamingFactoryInitial + " javaNamingProviderUrl:" +
+                    javaNamingProviderUrl + " connectionPoolSize:" + connectionPoolSize, messageContext);
         }
         if ((!JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) &&
                 (!JMSConnectorConstants.TOPIC_NAME_PREFIX.equals(destinationType))) {
             handleException("Invalid destination type. It must be a queue or a topic. Current value : " +
                     destinationType, messageContext);
         }
-        String tenantID = String.valueOf(((Axis2MessageContext) messageContext).getProperties()
-                .get(JMSConnectorConstants.TENANT_ID));
+
+        String tenantID = String.valueOf(CarbonContext.getThreadLocalCarbonContext().getTenantId());
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
-        if (null == JMSPublisherPoolManager.getInstance().getPoolFromMap(publisherCacheKey)) {
-            synchronized (publisherCacheKey.intern()) {
-                if (null == JMSPublisherPoolManager.getInstance().getPoolFromMap(publisherCacheKey)) {
-                    JMSPublisherPoolManager.getInstance().addPoolToMap(publisherCacheKey, new PublisherPool(destinationName,
-                            destinationType, connectionFactoryName, connectionPoolSize, javaNamingProviderUrl,
-                            javaNamingFactoryInitial,username,password));
-                    if (log.isDebugEnabled()) {
-                        log.debug("JMS Publisher pool created for destination : " + destinationName);
-                    }
-                }
+
+        if (null == JMSPublisherPoolManager.getPoolFromManager(publisherCacheKey)) {
+            JMSPublisherPoolManager.addPoolToManager(publisherCacheKey, new JMSPublisherPool(destinationName,
+                    destinationType, connectionFactoryName, Integer.parseInt(connectionPoolSize),
+                    javaNamingProviderUrl, javaNamingFactoryInitial, username, password, priority, deliveryMood, timeToLive));
+            if (log.isDebugEnabled()) {
+                log.debug("JMS Publisher pool created for destination : " + destinationName);
             }
         }
     }
