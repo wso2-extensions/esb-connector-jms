@@ -20,7 +20,6 @@ package org.wso2.carbon.esb.connector.jms;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.synapse.MessageContext;
-import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
 import org.wso2.carbon.context.CarbonContext;
@@ -51,18 +50,18 @@ public class JMSConnector extends AbstractConnector {
             log.debug("Processing message for destination : " + destinationType + " : " + destinationName
                     + " with connection factory : " + connectionFactoryName);
         }
-        JMSPublisherPool JMSPublisherPool;
+        JMSPublisherPool jmsPublisherPool;
         JMSPublisher JMSPublisher = null;
         String tenantID = String.valueOf(CarbonContext.getThreadLocalCarbonContext().getTenantId());
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
-        JMSPublisherPool = JMSPublisherPoolManager.getPoolFromManager(publisherCacheKey);
+        jmsPublisherPool = JMSPublisherPoolManager.getJMSPublisherPool(publisherCacheKey);
+        if (jmsPublisherPool == null) {
+            handleException("Publisher pool cannot be empty please create the pool", messageContext);
+            return;
+        }
         try {
-            if (JMSPublisherPool != null) {
-                JMSPublisher = JMSPublisherPool.getPublisher();
-                JMSPublisher.publishMessage(((Axis2MessageContext) messageContext).getAxis2MessageContext());
-            } else {
-                handleException("Pool cannot be empty please create a connection pool", messageContext);
-            }
+            JMSPublisher = jmsPublisherPool.getPublisher();
+            JMSPublisher.publishMessage(messageContext);
         } catch (NamingException e) {
             handleException("NamingException : ", e, messageContext);
         } catch (JMSException e) {
@@ -76,7 +75,7 @@ public class JMSConnector extends AbstractConnector {
             }
         } finally {
             if (null != JMSPublisher) {
-                JMSPublisherPool.releasePublisher(JMSPublisher);
+                jmsPublisherPool.releasePublisher(JMSPublisher);
             }
         }
     }

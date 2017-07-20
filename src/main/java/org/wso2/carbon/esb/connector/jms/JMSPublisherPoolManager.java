@@ -29,14 +29,7 @@ public class JMSPublisherPoolManager {
     /**
      * Will keep the publisher pools
      */
-    private static Map<String, JMSPublisherPool> publisherPoolManager = null;
-
-    /*
-      A static initializer is used to set up a class.
-     */
-    static {
-        publisherPoolManager = new ConcurrentHashMap<>();
-    }
+    private static final Map<String, JMSPublisherPool> publisherPoolManager = new ConcurrentHashMap<>();
 
     /**
      * Will get the publisher pool from the pool manager.
@@ -44,7 +37,7 @@ public class JMSPublisherPoolManager {
      * @param publisherKey The publisher key.
      * @return the publisher pool.
      */
-    public static JMSPublisherPool getPoolFromManager(String publisherKey) {
+    public static JMSPublisherPool getJMSPublisherPool(String publisherKey) {
         return publisherPoolManager.get(publisherKey);
     }
 
@@ -54,7 +47,16 @@ public class JMSPublisherPoolManager {
      * @param publisherKey     The publisher key.
      * @param JMSPublisherPool The publisher pool.
      */
-    public static void addPoolToManager(String publisherKey, JMSPublisherPool JMSPublisherPool) {
+    public static void addJMSPublisherPool(String publisherKey, JMSPublisherPool JMSPublisherPool) {
         publisherPoolManager.putIfAbsent(publisherKey, JMSPublisherPool);
+    }
+
+    /**
+     * In case cache expiry does not happen, the GC collection should trigger the shutdown of the context.
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        publisherPoolManager.clear();
+        super.finalize();
     }
 }

@@ -65,8 +65,8 @@ public class JMSInitializer extends AbstractConnector {
         String tenantID = String.valueOf(CarbonContext.getThreadLocalCarbonContext().getTenantId());
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
 
-        if (null == JMSPublisherPoolManager.getPoolFromManager(publisherCacheKey)) {
-            JMSPublisherPoolManager.addPoolToManager(publisherCacheKey, new JMSPublisherPool(destinationName,
+        if (null == JMSPublisherPoolManager.getJMSPublisherPool(publisherCacheKey)) {
+            JMSPublisherPoolManager.addJMSPublisherPool(publisherCacheKey, new JMSPublisherPool(destinationName,
                     destinationType, connectionFactoryName, Integer.parseInt(connectionPoolSize),
                     javaNamingProviderUrl, javaNamingFactoryInitial, username, password, priority, deliveryMood, timeToLive));
             if (log.isDebugEnabled()) {

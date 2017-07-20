@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.synapse.SynapseException;
+import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.apache.synapse.mediators.Value;
 
 import javax.activation.DataHandler;
@@ -278,12 +279,14 @@ public class JMSPublisher {
     /**
      * Method exposed to publish a message using this JMS context (session, connection).
      *
-     * @param messageContext The Synapse message context
+     * @param synapseMessageContext The Synapse message context
      * @throws JMSException The JMSException
      */
-    public void publishMessage(MessageContext messageContext) throws JMSException {
+    public void publishMessage(org.apache.synapse.MessageContext synapseMessageContext) throws JMSException {
+        MessageContext messageContext = ((Axis2MessageContext) synapseMessageContext).getAxis2MessageContext();
         if (null != session && null != messageProducer) {
             Message messageToPublish = createJMSMessage(messageContext);
+            setDynamicMessageHeaders(synapseMessageContext, messageToPublish);
             publish(messageToPublish, messageContext);
         }
     }
@@ -368,7 +371,6 @@ public class JMSPublisher {
             convertXMLtoJMSMap(msgContext.getEnvelope().getBody().getFirstChildWithName(
                     JMSConnectorConstants.MAP_QNAME), (MapMessage) message);
         }
-        setDynamicMessageHeaders(msgContext, message);
         return message;
     }
 
@@ -378,61 +380,61 @@ public class JMSPublisher {
      * @param msgContext The synapse message context
      * @param message    The Message interface is the root interface of all JMS messages.
      */
-    private void setDynamicMessageHeaders(MessageContext msgContext, Message message) {
-        if (message != null) {
-            String messageID = (String) msgContext.getProperty(JMSConnectorConstants.JMS_MESSAGE_ID);
-            String jmsType = (String) msgContext.getProperty(JMSConnectorConstants.JMS_MESSAGE_TYPE);
-            String timestamp = (String) msgContext.getProperty(JMSConnectorConstants.JMS_TIMESTAMP);
-            String correlationID = (String) msgContext.getProperty(JMSConnectorConstants.JMS_CORRELATION_ID);
-            String expiration = (String) msgContext.getProperty(JMSConnectorConstants.JMS_EXPIRATION);
-            String priority = (String) msgContext.getProperty(JMSConnectorConstants.JMS_PRIORITY);
-            String deliveryMood = (String) msgContext.getProperty(JMSConnectorConstants.JMS_DELIVERY_MODE);
-            try {
-                if (StringUtils.isNotEmpty(messageID)) {
-                    message.setJMSMessageID(messageID);
-                }
-                if (StringUtils.isNotEmpty(jmsType)) {
-                    message.setJMSType(jmsType);
-                }
-                if (StringUtils.isNotEmpty(timestamp)) {
-                    message.setJMSTimestamp(Long.parseLong(timestamp));
-                }
-                if (StringUtils.isNotEmpty(correlationID)) {
-                    message.setJMSCorrelationID(correlationID);
-                }
-                if (StringUtils.isNotEmpty(expiration)) {
-                    message.setJMSExpiration(Long.parseLong(expiration));
-                }
-                if (StringUtils.isNotEmpty(priority)) {
-                    message.setJMSPriority(Integer.parseInt(priority));
-                }
-                if (StringUtils.isNotEmpty(deliveryMood)) {
-                    message.setJMSDeliveryMode(Integer.parseInt(deliveryMood));
-                }
-                Map<String, Object> dynamicHeaders = getDynParameters(msgContext, connectionFactoryName);
-                if (dynamicHeaders.size() > 0) {
-                    Set<String> headerSet = dynamicHeaders.keySet();
-                    Object value;
-                    for (String set : headerSet) {
-                        value = dynamicHeaders.get(set);
-                        if (value instanceof String) {
-                            message.setStringProperty(set, (String) value);
-                        } else if (value instanceof Boolean) {
-                            message.setBooleanProperty(set, (Boolean) value);
-                        } else if (value instanceof Integer) {
-                            message.setIntProperty(set, (Integer) value);
-                        } else if (value instanceof Long) {
-                            message.setLongProperty(set, (Long) value);
-                        } else if (value instanceof Double) {
-                            message.setDoubleProperty(set, (Double) value);
-                        } else if (value instanceof Float) {
-                            message.setFloatProperty(set, (Float) value);
-                        }
+    private void setDynamicMessageHeaders(org.apache.synapse.MessageContext msgContext, Message message) {
+        if (message == null) {
+            return;
+        }
+        String messageID = (String) msgContext.getProperty(JMSConnectorConstants.JMS_MESSAGE_ID);
+        String jmsType = (String) msgContext.getProperty(JMSConnectorConstants.JMS_MESSAGE_TYPE);
+        String timestamp = (String) msgContext.getProperty(JMSConnectorConstants.JMS_TIMESTAMP);
+        String correlationID = (String) msgContext.getProperty(JMSConnectorConstants.JMS_CORRELATION_ID);
+        String expiration = (String) msgContext.getProperty(JMSConnectorConstants.JMS_EXPIRATION);
+        String priority = (String) msgContext.getProperty(JMSConnectorConstants.JMS_PRIORITY);
+        String deliveryMood = (String) msgContext.getProperty(JMSConnectorConstants.JMS_DELIVERY_MODE);
+        try {
+            if (StringUtils.isNotEmpty(messageID)) {
+                message.setJMSMessageID(messageID);
+            }
+            if (StringUtils.isNotEmpty(jmsType)) {
+                message.setJMSType(jmsType);
+            }
+            if (StringUtils.isNotEmpty(timestamp)) {
+                message.setJMSTimestamp(Long.parseLong(timestamp));
+            }
+            if (StringUtils.isNotEmpty(correlationID)) {
+                message.setJMSCorrelationID(correlationID);
+            }
+            if (StringUtils.isNotEmpty(expiration)) {
+                message.setJMSExpiration(Long.parseLong(expiration));
+            }
+            if (StringUtils.isNotEmpty(priority)) {
+                message.setJMSPriority(Integer.parseInt(priority));
+            }
+            if (StringUtils.isNotEmpty(deliveryMood)) {
+                message.setJMSDeliveryMode(Integer.parseInt(deliveryMood));
+            }
+            Hashtable<String, Object> dynamicHeaders = getDynamicParameters(msgContext, connectionFactoryName);
+            if (dynamicHeaders.size() > 0) {
+                Set<String> headers = dynamicHeaders.keySet();
+                for (String header : headers) {
+                    Object value = dynamicHeaders.get(header);
+                    if (value instanceof String) {
+                        message.setStringProperty(header, (String) value);
+                    } else if (value instanceof Boolean) {
+                        message.setBooleanProperty(header, (Boolean) value);
+                    } else if (value instanceof Integer) {
+                        message.setIntProperty(header, (Integer) value);
+                    } else if (value instanceof Long) {
+                        message.setLongProperty(header, (Long) value);
+                    } else if (value instanceof Double) {
+                        message.setDoubleProperty(header, (Double) value);
+                    } else if (value instanceof Float) {
+                        message.setFloatProperty(header, (Float) value);
                     }
                 }
-            } catch (JMSException e) {
-                log.error("Error while set the optional parameters to message" + e.getMessage());
             }
+        } catch (JMSException e) {
+            log.error("Error while set the optional parameters to message" + e.getMessage());
         }
     }
 
@@ -474,23 +476,19 @@ public class JMSPublisher {
     /**
      * Will generate the dynamic parameters from message context parameter
      *
-     * @param key            The key to generate the dynamic parameters(connection factory name)
-     * @param messageContext The message contest
+     * @param connectionFactoryName The connectionFactoryName to generate the dynamic parameters(connection factory name)
+     * @param messageContext        The message contest
      * @return extract the value's from properties and make its as hashable
      */
-    private Hashtable<String, Object> getDynParameters(MessageContext messageContext, String key) {
+    private Hashtable<String, Object> getDynamicParameters(org.apache.synapse.MessageContext messageContext,
+                                                           String connectionFactoryName) {
         Hashtable<String, Object> dynamicValues = new Hashtable<>();
-        key = JMSConnectorConstants.METHOD_NAME + key;
-        Map<String, Object> propertiesMap = (messageContext.getProperties());
-        Set prop = propertiesMap.keySet();
-
-        Value probValues;
-        for (String stringValue : (String[]) prop.toArray(new String[prop.size()])) {
-            if (stringValue.startsWith(key)) {
-                probValues = (Value) propertiesMap.get(stringValue);
-                dynamicValues.put(stringValue.substring(key.length() + 1, stringValue.length())
-                        , probValues.getKeyValue());
-                propertiesMap.keySet().remove(stringValue);
+        String key = JMSConnectorConstants.METHOD_NAME + connectionFactoryName;
+        Map<String, Object> propertiesMap = (((Axis2MessageContext) messageContext).getProperties());
+        for (String keyValue : propertiesMap.keySet()) {
+            if (keyValue.startsWith(key)) {
+                Value propertyValue = (Value) propertiesMap.get(keyValue);
+                dynamicValues.put(keyValue.substring(key.length() + 1, keyValue.length()), propertyValue.getKeyValue());
             }
         }
         return dynamicValues;
