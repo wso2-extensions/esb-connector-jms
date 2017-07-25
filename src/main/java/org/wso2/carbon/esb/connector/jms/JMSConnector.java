@@ -50,32 +50,20 @@ public class JMSConnector extends AbstractConnector {
             log.debug("Processing message for destination : " + destinationType + " : " + destinationName
                     + " with connection factory : " + connectionFactoryName);
         }
-        JMSPublisherPool jmsPublisherPool;
-        JMSPublisher JMSPublisher = null;
+        JMSPublisher jmsPublisher = null;
         String tenantID = String.valueOf(CarbonContext.getThreadLocalCarbonContext().getTenantId());
         String publisherCacheKey = tenantID + ":" + connectionFactoryName + ":" + destinationType + ":" + destinationName;
-        jmsPublisherPool = JMSPublisherPoolManager.getJMSPublisherPool(publisherCacheKey);
-        if (jmsPublisherPool == null) {
-            handleException("Publisher pool cannot be empty please create the pool", messageContext);
-            return;
-        }
+        JMSPublisherPool jmsPublisherPool = JMSPublisherPoolManager.getJMSPublisherPool(publisherCacheKey);
         try {
-            JMSPublisher = jmsPublisherPool.getPublisher();
-            JMSPublisher.publishMessage(messageContext);
+            jmsPublisher = jmsPublisherPool.getPublisher();
+            jmsPublisher.publishMessage(messageContext);
         } catch (NamingException e) {
-            handleException("NamingException : ", e, messageContext);
+            log.error("NamingException : Error while create the connection", e);
         } catch (JMSException e) {
-            try {
-                if (JMSPublisher != null) {
-                    JMSPublisher.close();
-                }
-            } catch (JMSException e1) {
-                handleException("JMSException while trying clear publisher connections due to failover : ", e1,
-                        messageContext);
-            }
+            log.error("Error while build the JMS message" + e);
         } finally {
-            if (null != JMSPublisher) {
-                jmsPublisherPool.releasePublisher(JMSPublisher);
+            if (null != jmsPublisher) {
+                jmsPublisherPool.releasePublisher(jmsPublisher);
             }
         }
     }

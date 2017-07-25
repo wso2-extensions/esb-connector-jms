@@ -312,7 +312,7 @@ public class JMSPublisher {
             try {
                 messageFormatter = MessageProcessorSelector.getMessageFormatter(msgContext);
             } catch (AxisFault axisFault) {
-                throw new JMSException("Unable to get the message formatter to use");
+                throw new SynapseException("Unable to get the message formatter to use");
             }
             String contentType = messageFormatter.getContentType(msgContext, format, msgContext.getSoapAction());
             boolean useBytesMessage = msgType != null && JMSConnectorConstants.BYTE_MESSAGE.equals(msgType) ||

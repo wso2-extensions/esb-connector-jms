@@ -18,8 +18,9 @@
 
 package org.wso2.carbon.esb.connector.jms;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+//import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JMS connection pool manager.
@@ -29,7 +30,7 @@ public class JMSPublisherPoolManager {
     /**
      * Will keep the publisher pools
      */
-    private static final Map<String, JMSPublisherPool> publisherPoolManager = new ConcurrentHashMap<>();
+    private static final Map<String, JMSPublisherPool> publisherPoolManager = new HashMap<>();
 
     /**
      * Will get the publisher pool from the pool manager.
@@ -48,7 +49,9 @@ public class JMSPublisherPoolManager {
      * @param JMSPublisherPool The publisher pool.
      */
     public static void addJMSPublisherPool(String publisherKey, JMSPublisherPool JMSPublisherPool) {
-        publisherPoolManager.putIfAbsent(publisherKey, JMSPublisherPool);
+        synchronized (JMSPublisherPoolManager.class) {
+            publisherPoolManager.putIfAbsent(publisherKey, JMSPublisherPool);
+        }
     }
 
     /**
