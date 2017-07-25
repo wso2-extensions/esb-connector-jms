@@ -81,15 +81,18 @@ public class JMSPublisherPool {
      * @throws NamingException The NamingException
      */
     public JMSPublisher getPublisher() throws JMSException, NamingException {
-        printDebugLog("Requesting publisher.");
         JMSPublisher publisher = publisherQueue.poll();
         if (publisher != null) {
-            printDebugLog("Returning an existing free publisher with hash : " + publisher);
+            if (log.isDebugEnabled()) {
+                log.debug("Returning an existing free publisher");
+            }
             return publisher;
         } else {
             publisher = new JMSPublisher(destination, connectionFactoryName, destinationType,
                     javaNamingProviderUrl, javaNamingFactoryInitial, username, password, priority, persistent, timeToLive);
-            printDebugLog("Created and returning a new publisher for destination with hash : " + publisher);
+            if (log.isDebugEnabled()) {
+                log.debug("Created and returning a new publisher for destination");
+            }
             return publisher;
         }
     }
@@ -100,28 +103,17 @@ public class JMSPublisherPool {
      * @param publisher The publisher to be expired
      */
     public void releasePublisher(JMSPublisher publisher) {
-        printDebugLog("Releasing Publisher : " + publisher);
         if (publisherQueue.size() < maxSize) {
             publisherQueue.add(publisher);
-            printDebugLog("Added publisher back to free pool.");
-        } else {
-            try {
-                publisherQueue.poll().close();
-            } catch (JMSException e) {
-                log.error("error while close the connection");
+            if (log.isDebugEnabled()) {
+                log.debug("Added publisher back to free pool.");
             }
+        } else {
+            publisherQueue.poll().close();
             publisherQueue.add(publisher);
-            printDebugLog("Destroying publisher because we have reached maximum size of publisher pool.");
-        }
-    }
-
-    /**
-     * @param message The message to print
-     */
-    private void printDebugLog(String message) {
-        if (log.isDebugEnabled()) {
-            log.debug(message + " destination : " + destinationType + ":" + destination + ", free publishers : " +
-                    publisherQueue.size());
+            if (log.isDebugEnabled()) {
+                log.debug("Destroying publisher because we have reached maximum size of publisher pool.");
+            }
         }
     }
 
@@ -131,7 +123,9 @@ public class JMSPublisherPool {
      * @throws JMSException The JMXException
      */
     public void close() throws JMSException {
-        printDebugLog("Destroying publisher pool");
+        if (log.isDebugEnabled()) {
+            log.debug("Destroying publisher pool");
+        }
         for (JMSPublisher freePublisher : publisherQueue) {
             freePublisher.close();
         }

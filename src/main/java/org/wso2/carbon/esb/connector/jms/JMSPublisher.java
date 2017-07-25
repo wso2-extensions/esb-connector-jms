@@ -236,18 +236,26 @@ public class JMSPublisher {
      * @param messageProducer A client uses a MessageProducer object to send messages to a destination.
      */
     private void setOptionalParameters(MessageProducer messageProducer) {
-        try {
-            if (deliveryMood != null) {
+        if (deliveryMood != null) {
+            try {
                 messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+            } catch (JMSException e) {
+                log.error("Error while setting JMS deliveryMood optional parameter", e);
             }
-            if (priority != null) {
+        }
+        if (priority != null) {
+            try {
                 messageProducer.setPriority(Integer.parseInt(priority));
+            } catch (JMSException e) {
+                log.error("Error while setting JMS priority optional parameter", e);
             }
-            if (timeToLive != null) {
+        }
+        if (timeToLive != null) {
+            try {
                 messageProducer.setTimeToLive(Long.parseLong(timeToLive));
+            } catch (JMSException e) {
+                log.error("Error while setting JMS timeToLive optional parameter", e);
             }
-        } catch (JMSException e) {
-            log.error("Error while setting JMS optional parameters", e);
         }
     }
 
@@ -284,11 +292,9 @@ public class JMSPublisher {
      */
     public void publishMessage(org.apache.synapse.MessageContext synapseMessageContext) throws JMSException {
         MessageContext messageContext = ((Axis2MessageContext) synapseMessageContext).getAxis2MessageContext();
-        if (null != session && null != messageProducer) {
-            Message messageToPublish = createJMSMessage(messageContext);
-            setDynamicMessageHeaders(synapseMessageContext, messageToPublish);
-            publish(messageToPublish, messageContext);
-        }
+        Message messageToPublish = createJMSMessage(messageContext);
+        setDynamicMessageHeaders(synapseMessageContext, messageToPublish);
+        publish(messageToPublish, messageContext);
     }
 
     /**
@@ -335,9 +341,14 @@ public class JMSPublisher {
             }
             try {
                 messageFormatter.writeTo(msgContext, format, out, true);
-                out.close();
-            } catch (IOException e) {
-                handleException("IO Error while creating BytesMessage", e);
+            } catch (AxisFault axisFault) {
+                axisFault.printStackTrace();
+            } finally {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    log.error("Error while close the OutputStream");
+                }
             }
             if (!useBytesMessage) {
                 TextMessage txtMsg = session.createTextMessage();
@@ -381,9 +392,6 @@ public class JMSPublisher {
      * @param message    The Message interface is the root interface of all JMS messages.
      */
     private void setDynamicMessageHeaders(org.apache.synapse.MessageContext msgContext, Message message) {
-        if (message == null) {
-            return;
-        }
         String messageID = (String) msgContext.getProperty(JMSConnectorConstants.JMS_MESSAGE_ID);
         String jmsType = (String) msgContext.getProperty(JMSConnectorConstants.JMS_MESSAGE_TYPE);
         String timestamp = (String) msgContext.getProperty(JMSConnectorConstants.JMS_TIMESTAMP);
@@ -391,30 +399,58 @@ public class JMSPublisher {
         String expiration = (String) msgContext.getProperty(JMSConnectorConstants.JMS_EXPIRATION);
         String priority = (String) msgContext.getProperty(JMSConnectorConstants.JMS_PRIORITY);
         String deliveryMood = (String) msgContext.getProperty(JMSConnectorConstants.JMS_DELIVERY_MODE);
-        try {
-            if (StringUtils.isNotEmpty(messageID)) {
+        if (StringUtils.isNotEmpty(messageID)) {
+            try {
                 message.setJMSMessageID(messageID);
+            } catch (JMSException e) {
+                log.warn("Error while set messageID", e);
             }
-            if (StringUtils.isNotEmpty(jmsType)) {
+        }
+        if (StringUtils.isNotEmpty(jmsType)) {
+            try {
                 message.setJMSType(jmsType);
+            } catch (JMSException e) {
+                log.warn("Error while set jmsType", e);
             }
-            if (StringUtils.isNotEmpty(timestamp)) {
+        }
+        if (StringUtils.isNotEmpty(timestamp)) {
+            try {
                 message.setJMSTimestamp(Long.parseLong(timestamp));
+            } catch (JMSException e) {
+                log.warn("Error while set timestamp", e);
             }
-            if (StringUtils.isNotEmpty(correlationID)) {
+        }
+        if (StringUtils.isNotEmpty(correlationID)) {
+            try {
                 message.setJMSCorrelationID(correlationID);
+            } catch (JMSException e) {
+                log.warn("Error while set correlationID", e);
             }
-            if (StringUtils.isNotEmpty(expiration)) {
+        }
+        if (StringUtils.isNotEmpty(expiration)) {
+            try {
                 message.setJMSExpiration(Long.parseLong(expiration));
+            } catch (JMSException e) {
+                log.warn("Error while set expiration", e);
             }
-            if (StringUtils.isNotEmpty(priority)) {
+        }
+        if (StringUtils.isNotEmpty(priority)) {
+            try {
                 message.setJMSPriority(Integer.parseInt(priority));
+            } catch (JMSException e) {
+                log.warn("Error while set priority", e);
             }
-            if (StringUtils.isNotEmpty(deliveryMood)) {
+        }
+        if (StringUtils.isNotEmpty(deliveryMood)) {
+            try {
                 message.setJMSDeliveryMode(Integer.parseInt(deliveryMood));
+            } catch (JMSException e) {
+                log.warn("Error while set deliveryMood", e);
             }
-            Hashtable<String, Object> dynamicHeaders = getDynamicParameters(msgContext, connectionFactoryName);
-            if (dynamicHeaders.size() > 0) {
+        }
+        Hashtable<String, Object> dynamicHeaders = getDynamicParameters(msgContext, connectionFactoryName);
+        if (dynamicHeaders.size() > 0) {
+            try {
                 Set<String> headers = dynamicHeaders.keySet();
                 for (String header : headers) {
                     Object value = dynamicHeaders.get(header);
@@ -432,10 +468,11 @@ public class JMSPublisher {
                         message.setFloatProperty(header, (Float) value);
                     }
                 }
+            } catch (JMSException e) {
+                log.error("Error while set the optional parameters to message" + e.getMessage());
             }
-        } catch (JMSException e) {
-            log.error("Error while set the optional parameters to message" + e.getMessage());
         }
+
     }
 
     /**
@@ -559,18 +596,28 @@ public class JMSPublisher {
     /**
      * Method to properly shutdown the JMS sessions and connections in the proper order. This is normally called when
      * a cached publisherContext expires.
-     *
-     * @throws JMSException The JMSException
      */
-    public void close() throws JMSException {
+    public void close() {
         if (null != messageProducer) {
-            messageProducer.close();
+            try {
+                messageProducer.close();
+            } catch (JMSException e) {
+                handleException("Error while close the messageProducer", e);
+            }
         }
         if (null != session) {
-            session.close();
+            try {
+                session.close();
+            } catch (JMSException e) {
+                handleException("Error while close the session", e);
+            }
         }
         if (null != connection) {
-            connection.close();
+            try {
+                connection.close();
+            } catch (JMSException e) {
+                handleException("Error while close the connection", e);
+            }
         }
         if (null != connectionFactory) {
             connectionFactory = null;

@@ -20,7 +20,6 @@ package org.wso2.carbon.esb.connector.jms;
 
 import java.util.HashMap;
 import java.util.Map;
-//import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JMS connection pool manager.

@@ -43,7 +43,6 @@ public class JMSExceptionListener implements ExceptionListener {
     public void onException(JMSException e) {
         synchronized (publisherCacheKey.intern()) {
             log.error("Cache will be cleared due to JMSException for destination : " + publisherCacheKey, e);
-            JMSPublisherPoolManager jmsPublisherPoolManager = new JMSPublisherPoolManager();
             try {
                 JMSPublisherPoolManager.getJMSPublisherPool(publisherCacheKey).close();
             } catch (JMSException e1) {
