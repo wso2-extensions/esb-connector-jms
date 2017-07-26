@@ -542,13 +542,7 @@ public class JMSPublisher {
         // perform actual message sending
         try {
             if (JMSConnectorConstants.QUEUE_NAME_PREFIX.equals(destinationType)) {
-                try {
-                    messageProducer.send(message);
-                } catch (JMSException e) {
-                    //create a queue reference in MB before publishing.
-                    session.createQueue(destinationName);
-                    messageProducer.send(message);
-                }
+                messageProducer.send(message);
             } else {
                 ((TopicPublisher) messageProducer).publish(message);
             }
