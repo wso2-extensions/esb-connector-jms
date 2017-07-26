@@ -145,6 +145,14 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <scm>
+        <connection>scm:git:https://github.com/wso2-extensions/esb-connector-jms.git</connection>
+        <url>https://github.com/wso2-extensions/esb-connector-jms.git</url>
+        <developerConnection>
+            scm:git:https://github.com/wso2-extensions/esb-connector-jms
+        </developerConnection>
+        <tag>HEAD</tag>
+    </scm>
     <build>
         <plugins>
             <plugin>
