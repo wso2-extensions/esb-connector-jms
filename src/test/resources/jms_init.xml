@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localEntry xmlns="http://ws.apache.org/ns/synapse" key="jms_init">
+   <jms.init>
+      <connectionFactoryName>QueueConnectionFactory</connectionFactoryName>
+      <javaNamingProviderUrl>tcp://localhost:61616</javaNamingProviderUrl>
+      <javaNamingFactoryInitial>org.apache.activemq.jndi.ActiveMQInitialContextFactory</javaNamingFactoryInitial>
+      <destinationType>queue</destinationType>
+      <connectionPoolSize>20</connectionPoolSize>
+      <destinationName>MyQueue</destinationName>
+   </jms.init>
+   <description/>
+</localEntry>
