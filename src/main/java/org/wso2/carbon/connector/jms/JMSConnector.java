@@ -15,7 +15,7 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package org.wso2.carbon.esb.connector.jms;
+package org.wso2.carbon.connector.jms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,7 +59,6 @@ public class JMSConnector extends AbstractConnector {
             jmsPublisher.publishMessage(messageContext);
         } catch (NamingException e) {
             log.error("NamingException : Error while create the connection", e);
-            jmsPublisher.close();
         } catch (JMSException e) {
             log.error("Error while build the JMS message" + e);
         } finally {

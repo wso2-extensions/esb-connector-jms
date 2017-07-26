@@ -15,8 +15,9 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package org.wso2.carbon.connector;
+package org.wso2.carbon.connector.integration.test.jms;
 
+import junit.framework.Assert;
 import org.json.JSONObject;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -36,15 +37,16 @@ public class JMSIntegrationTest extends ConnectorIntegrationTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        init("JMS-connector-1.0.0");
+        init("jms-connector-1.0.0-SNAPSHOT");
         esbRequestHeadersMap.put("Accept-Charset", "UTF-8");
         esbRequestHeadersMap.put("Content-Type", "application/json");
+        esbRequestHeadersMap.put("Accept", "application/json");
     }
 
-    @Test(enabled = true, groups = {"wso2.esb"}, description = "JMS test case")
-    public void testSample() throws Exception {
-        log.info("Successfully tested");
-        RestResponse<JSONObject> esbRestResponse =
-                sendJsonRestRequest(proxyUrl, "POST", esbRequestHeadersMap, "sampleRequest.json");
+    @Test(enabled = true, groups = {"wso2.esb.connector"}, description = "JMS test case")
+    public void publishMessage() throws Exception {
+        RestResponse<JSONObject> esbRestResponse = sendJsonRestRequest(proxyUrl,
+                "GET", esbRequestHeadersMap, "jmsPublishMessageRequest.json");
+        Assert.assertEquals(esbRestResponse.getBody().get("MessageID") != null, true);
     }
 }

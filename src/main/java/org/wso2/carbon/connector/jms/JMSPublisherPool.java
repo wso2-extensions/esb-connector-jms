@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package org.wso2.carbon.esb.connector.jms;
+package org.wso2.carbon.connector.jms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,7 +65,7 @@ public class JMSPublisherPool {
         this.maxSize = maxPoolSize;
         this.javaNamingProviderUrl = javaNamingProviderUrl;
         this.javaNamingFactoryInitial = javaNamingFactoryInitial;
-        this.publisherQueue = new ConcurrentLinkedQueue<>();
+        this.publisherQueue = new ConcurrentLinkedQueue<JMSPublisher>();
         this.username = username;
         this.password = password;
         this.persistent = deliveryMood;

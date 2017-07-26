@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.esb.connector.jms;
+package org.wso2.carbon.connector.jms;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class JMSPublisherPoolManager {
     /**
      * Will keep the publisher pools
      */
-    private static final Map<String, JMSPublisherPool> publisherPoolManager = new HashMap<>();
+    private static final Map<String, JMSPublisherPool> publisherPoolManager = new HashMap<String, JMSPublisherPool>();
 
     /**
      * Will get the publisher pool from the pool manager.
@@ -49,7 +49,9 @@ public class JMSPublisherPoolManager {
      */
     public static void addJMSPublisherPool(String publisherKey, JMSPublisherPool JMSPublisherPool) {
         synchronized (JMSPublisherPoolManager.class) {
-            publisherPoolManager.putIfAbsent(publisherKey, JMSPublisherPool);
+            if (null == publisherPoolManager.get(publisherKey)) {
+                publisherPoolManager.put(publisherKey, JMSPublisherPool);
+            }
         }
     }
 

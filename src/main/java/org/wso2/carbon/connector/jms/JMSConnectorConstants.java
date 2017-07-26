@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.carbon.esb.connector.jms;
+package org.wso2.carbon.connector.jms;
 
 import javax.xml.namespace.QName;
 

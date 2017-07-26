@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package org.wso2.carbon.esb.connector.jms;
+package org.wso2.carbon.connector.jms;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMNode;
@@ -168,16 +168,12 @@ public class JMSPublisher {
         if (null == jndiProperties) {
             initializeJNDIProperties();
         }
-        switch (destinationType) {
-            case JMSConnectorConstants.QUEUE_NAME_PREFIX:
-                initializeQueueProducer();
-                break;
-            case JMSConnectorConstants.TOPIC_NAME_PREFIX:
-                initializeTopicProducer();
-                break;
-            default:
-                throw new JMSException("Invalid destination type. It must be a queue or a topic. " +
-                        "Current value : " + destinationType);
+        if (destinationType.equals(JMSConnectorConstants.QUEUE_NAME_PREFIX)) {
+            initializeQueueProducer();
+
+        } else {
+            initializeTopicProducer();
+
         }
     }
 
@@ -519,7 +515,7 @@ public class JMSPublisher {
      */
     private Hashtable<String, Object> getDynamicParameters(org.apache.synapse.MessageContext messageContext,
                                                            String connectionFactoryName) {
-        Hashtable<String, Object> dynamicValues = new Hashtable<>();
+        Hashtable<String, Object> dynamicValues = new Hashtable<String, Object>();
         String key = JMSConnectorConstants.METHOD_NAME + connectionFactoryName;
         Map<String, Object> propertiesMap = (((Axis2MessageContext) messageContext).getProperties());
         for (String keyValue : propertiesMap.keySet()) {

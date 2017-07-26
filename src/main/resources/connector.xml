@@ -17,7 +17,7 @@
    under the License.
 -->
 <connector>
-    <component name="jms" package="org.wso2.carbon.esb.connector" >
+    <component name="jms" package="org.wso2.carbon.connector" >
         <dependency component="config" />
         <dependency component="publish" />
         <description>JMS Message Producer</description>

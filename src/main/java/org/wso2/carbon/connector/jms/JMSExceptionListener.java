@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.carbon.esb.connector.jms;
+package org.wso2.carbon.connector.jms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,18 +36,29 @@ public class JMSExceptionListener implements ExceptionListener {
         this.publisherCacheKey = publisherCacheKey;
     }
 
-    /**
-     * @param e Exception
-     */
-    @Override
     public void onException(JMSException e) {
-        synchronized (publisherCacheKey.intern()) {
+                synchronized (publisherCacheKey.intern()) {
             log.error("Cache will be cleared due to JMSException for destination : " + publisherCacheKey, e);
             try {
                 JMSPublisherPoolManager.getJMSPublisherPool(publisherCacheKey).close();
             } catch (JMSException e1) {
-                log.error("Error while close the connections");
+                log.warn("Error while close the connections");
             }
         }
     }
+
+//    /**
+//     * @param e Exception
+//     */
+//    @Override
+//    public void onException(JMSException e) {
+//        synchronized (publisherCacheKey.intern()) {
+//            log.error("Cache will be cleared due to JMSException for destination : " + publisherCacheKey, e);
+//            try {
+//                JMSPublisherPoolManager.getJMSPublisherPool(publisherCacheKey).close();
+//            } catch (JMSException e1) {
+//                log.warn("Error while close the connections");
+//            }
+//        }
+//    }
 }

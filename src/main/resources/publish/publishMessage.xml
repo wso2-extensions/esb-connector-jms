@@ -32,6 +32,6 @@
         <property name="messageTimestamp" expression="$func:messageTimestamp"/>
         <property name="messageExpiration" expression="$func:messageExpiration"/>
         <property name="messagePriority" expression="$func:messagePriority"/>
-        <class name="org.wso2.carbon.esb.connector.jms.JMSConnector"/>
+        <class name="org.wso2.carbon.connector.jms.JMSConnector"/>
     </sequence>
 </template>

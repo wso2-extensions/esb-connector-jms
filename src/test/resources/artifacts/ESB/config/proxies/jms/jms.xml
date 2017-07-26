@@ -17,16 +17,18 @@
  ~  under the License.
 -->
 
-<proxy xmlns="http://ws.apache.org/ns/synapse" name="Sample"
+<proxy xmlns="http://ws.apache.org/ns/synapse" name="jms"
        transports="https,http" statistics="disable" trace="disable"
        startOnLoad="true">
     <target>
         <inSequence>
-            <property name="generated_param" expression="json-eval(.generated_param)"/>
-            <Sample.sample_template>
-                <generated_param>{$ctx:generated_param}</generated_param>
-            </Sample.sample_template>
-            <log level="full"/>
+            <property name="OUT_ONLY" value="true"/>
+            <jms.publishMessage configKey="jms_init"/>
+            <property name="out" expression="get-property('MessageID')"/>
+            <payloadFactory media-type="json">
+                <format>{ "MessageID":'$ctx:out'}</format>
+                <args/>
+            </payloadFactory>
             <respond/>
         </inSequence>
     </target>

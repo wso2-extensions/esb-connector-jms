@@ -40,6 +40,6 @@
         <property name="jmsPriority" expression="$func:priority"/>
         <property name="jmsDeliveryMode" expression="$func:deliveryMode"/>
         <property name="jmsTimeToLive" expression="$func:timeToLive"/>
-        <class name="org.wso2.carbon.esb.connector.jms.JMSInitializer"/>
+        <class name="org.wso2.carbon.connector.jms.JMSInitializer"/>
     </sequence>
 </template>
