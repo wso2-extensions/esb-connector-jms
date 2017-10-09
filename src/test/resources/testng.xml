@@ -25,9 +25,14 @@
         <listener class-name="org.wso2.carbon.automation.core.PlatformTestManager"/>
         <listener class-name="org.wso2.carbon.automation.core.PlatformReportManager"/>
     </listeners>
-    <test name="JMS-Connector-Test" preserve-order="true" verbose="2">
-        <packages>
-            <package name="org.wso2.carbon.connector.integration.test.jms"/>
-        </packages>
+    <!--<test name="JMS-Connector-Test" preserve-order="true" verbose="2">
+        <classes>
+            <class name="org.wso2.carbon.connector.integration.test.jms.JMSIntegrationTest"/>
+        </classes>
+    </test>-->
+    <test name="JMS unit testing">
+        <classes>
+            <class name="org.wso2.carbon.connector.unit.test.jms.JMSUnitTest" />
+        </classes>
     </test>
 </suite>
