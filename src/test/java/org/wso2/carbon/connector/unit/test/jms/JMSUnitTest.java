@@ -41,17 +41,14 @@ import org.wso2.carbon.connector.jms.JMSConnector;
 import org.wso2.carbon.connector.jms.JMSConnectorConstants;
 import org.wso2.carbon.connector.jms.JMSInitializer;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+
 import java.io.StringReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.jms.Connection;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 public class JMSUnitTest {
-    private static final String CARBON_HOME = "carbon.home";
-    private static final String PROVIDER_URL = "vm://localhost";
     private JMSConnector jmsConnector;
     private JMSInitializer jmsInitializer;
     private MessageContext messageContext;
@@ -70,7 +67,7 @@ public class JMSUnitTest {
                                                       + "?jms.prefetchPolicy.all=1");
         connection = connFactory.createConnection();
         connection.start();
-        setCarbonHome();
+        System.setProperty("carbon.home", JMSUnitTest.class.getResource("/").getFile());
         PrivilegedCarbonContext.startTenantFlow();
         PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
@@ -94,37 +91,46 @@ public class JMSUnitTest {
 
     @Test
     public void publishMessage1() throws AxisFault, ConnectException {
-            messageContext = createMessageContext();
-            messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
-            messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
-            messageContext.setProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME, "QueueConnectionFactory");
-            messageContext.setProperty
-                    (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
-                     "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
-            messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
-            messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
-            //messageContext.setProperty(JMSConnectorConstants.DELIVERY_MODE, "1");
-            jmsInitializer.connect(messageContext);
-            jmsConnector.connect(messageContext);
-            Assert.assertEquals((messageContext.getEnvelope().getBody().getFirstElement()).getText()!= null,
-                                true);
+        messageContext = createMessageContext();
+        messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
+        messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME, "QueueConnectionFactory");
+        messageContext.setProperty
+                (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
+                 "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+        messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
+        messageContext.setProperty(JMSConnectorConstants.JMS_MESSAGE_TYPE, "ByteMessage");
+        jmsInitializer.connect(messageContext);
+        jmsConnector.connect(messageContext);
+        Assert.assertEquals((messageContext.getEnvelope().getBody().getFirstElement()).getText() != null,
+                            true);
     }
 
     @Test
     public void publishMessage2() throws AxisFault, ConnectException {
-            messageContext = createMessageContext();
-            messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
-            messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "topic");
-            messageContext.setProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME, "TopicConnectionFactory");
-            messageContext.setProperty
-                    (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
-                     "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
-            messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
-            messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
-            jmsInitializer.connect(messageContext);
-            jmsConnector.connect(messageContext);
-           Assert.assertEquals((messageContext.getEnvelope().getBody().getFirstElement()).getText()!= null,
-                               true);
+        messageContext = createMessageContext();
+        messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
+        messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "topic");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME, "TopicConnectionFactory");
+        messageContext.setProperty
+                (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
+                 "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+        messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
+        messageContext.setProperty(JMSConnectorConstants.DELIVERY_MODE, "1");
+        messageContext.setProperty(JMSConnectorConstants.TIME_TO_LIVE, "500");
+        messageContext.setProperty(JMSConnectorConstants.PRIORITY, "1");
+        messageContext.setProperty(JMSConnectorConstants.USERNAME, "guest");
+        messageContext.setProperty(JMSConnectorConstants.PASSWORD, "guest");
+        messageContext.setProperty(JMSConnectorConstants.JMS_PRIORITY, "1");
+        messageContext.setProperty(JMSConnectorConstants.JMS_TIMESTAMP, "1072017");
+        messageContext.setProperty(JMSConnectorConstants.JMS_DELIVERY_MODE, "1");
+        messageContext.setProperty(JMSConnectorConstants.JMS_CORRELATION_ID, "10");
+        jmsInitializer.connect(messageContext);
+        jmsConnector.connect(messageContext);
+        Assert.assertEquals((messageContext.getEnvelope().getBody().getFirstElement()).getText() != null,
+                            true);
     }
 
     protected MessageContext createMessageContext() throws AxisFault {
@@ -149,13 +155,6 @@ public class JMSUnitTest {
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void setCarbonHome() {
-        Path carbonHome = Paths.get("");
-        carbonHome = Paths.get(carbonHome.toString(), "src", "test");
-        System.setProperty(CARBON_HOME, carbonHome.toString());
-        System.out.println("Carbon Home Absolute path set to: " + carbonHome.toAbsolutePath());
     }
 
     protected BrokerService createBroker() throws Exception {
