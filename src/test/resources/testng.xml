@@ -30,4 +30,9 @@
             <package name="org.wso2.carbon.connector.integration.test.jms"/>
         </packages>
     </test>
+    <test name="JMS unit testing">
+        <classes>
+            <class name="org.wso2.carbon.connector.unit.test.jms.JMSUnitTest" />
+        </classes>
+    </test>
 </suite>
