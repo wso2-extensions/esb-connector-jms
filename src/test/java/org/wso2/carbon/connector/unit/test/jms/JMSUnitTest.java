@@ -71,8 +71,8 @@ public class JMSUnitTest {
         PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(MultitenantConstants.SUPER_TENANT_ID);
     }
 
-    @Test(expectedExceptions = SynapseException.class)
-    public void publishMessage() throws AxisFault, ConnectException {
+    @Test(expectedExceptions = SynapseException.class, description = "Testcase with invalid destination type")
+    public void publishMessageWithInvalidDestinationTypeTest() throws AxisFault, ConnectException {
         messageContext = createMessageContext();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue1");
@@ -81,13 +81,13 @@ public class JMSUnitTest {
                 (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL, "org.apache.activemq.jndi "
                         + "ActiveMQInitialContextFactory");
         messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
-        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "20");
         jmsInitializer.connect(messageContext);
         jmsConnector.connect(messageContext);
     }
 
-    @Test
-    public void publishMessage1() throws AxisFault, ConnectException {
+    @Test (description = "publishing message when destinationType = queue")
+    public void publishMessageWithQueueTest() throws AxisFault, ConnectException {
         messageContext = createMessageContext();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
@@ -96,7 +96,7 @@ public class JMSUnitTest {
                 (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
                  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
         messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
-        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "20");
         messageContext.setProperty(JMSConnectorConstants.JMS_MESSAGE_TYPE, "ByteMessage");
         messageContext.setProperty(JMSConnectorConstants.JMS_PRIORITY, "1");
         jmsInitializer.connect(messageContext);
@@ -105,8 +105,8 @@ public class JMSUnitTest {
                             true);
     }
 
-    @Test
-    public void publishMessage2() throws AxisFault, ConnectException {
+    @Test (description = "Publishing message when messageType is map")
+    public void publishMessageWithMapMessageTypeTest() throws AxisFault, ConnectException {
         messageContext = createMessageContextForMap();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "topic");
@@ -115,7 +115,7 @@ public class JMSUnitTest {
                 (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
                  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
         messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
-        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "20");
         messageContext.setProperty(JMSConnectorConstants.DELIVERY_MODE, "1");
         messageContext.setProperty(JMSConnectorConstants.TIME_TO_LIVE, "500");
         messageContext.setProperty(JMSConnectorConstants.PRIORITY, "1");
@@ -133,8 +133,8 @@ public class JMSUnitTest {
                             true);
     }
 
-    @Test
-    public void publishMessage3() throws AxisFault, ConnectException {
+    @Test(description = "Publishing message when messageType is binary")
+    public void publishMessageWithBinaryMessageTypeTest() throws AxisFault, ConnectException {
         messageContext = createMessageContextForBinary();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
@@ -143,7 +143,7 @@ public class JMSUnitTest {
                 (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
                  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
         messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
-        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "20");
         messageContext.setProperty(JMSConnectorConstants.DELIVERY_MODE, "1");
         messageContext.setProperty(JMSConnectorConstants.TIME_TO_LIVE, "500");
         messageContext.setProperty(JMSConnectorConstants.PRIORITY, "1");
@@ -160,8 +160,8 @@ public class JMSUnitTest {
                             true);
     }
 
-    @Test
-    public void publishMessage4() throws AxisFault, ConnectException {
+    @Test(description = "Publishing message when messageType is text")
+    public void publishMessageWithTextMessageTypeTest() throws AxisFault, ConnectException {
         messageContext = createMessageContextForText();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
@@ -170,7 +170,7 @@ public class JMSUnitTest {
                 (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
                  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
         messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
-        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "20");
         messageContext.setProperty(JMSConnectorConstants.DELIVERY_MODE, "1");
         messageContext.setProperty(JMSConnectorConstants.TIME_TO_LIVE, "500");
         messageContext.setProperty(JMSConnectorConstants.PRIORITY, "1");
@@ -188,8 +188,8 @@ public class JMSUnitTest {
                             true);
     }
 
-    @Test
-    public void publishMessage5() throws AxisFault, ConnectException {
+    @Test(description = "publishing message when destinationType = queue")
+    public void publishMessageWithTopicTest() throws AxisFault, ConnectException {
         messageContext = createMessageContext();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "topic");
@@ -198,7 +198,7 @@ public class JMSUnitTest {
                 (JMSConnectorConstants.JAVA_NAMING_FACTORY_INITIAL,
                  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
         messageContext.setProperty(JMSConnectorConstants.JAVA_NAMING_PROVIDER_URL, "vm://localhost");
-        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "10000");
+        messageContext.setProperty(JMSConnectorConstants.CONNECTION_POOL_SIZE, "20");
         ((Axis2MessageContext)messageContext).getAxis2MessageContext().setProperty
                 (JMSConnectorConstants.JMS_MESSAGE_TYPE, "ByteMessage");
         jmsInitializer.connect(messageContext);
