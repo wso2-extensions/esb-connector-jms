@@ -72,7 +72,7 @@ public class JMSUnitTest {
     }
 
     @Test(expectedExceptions = SynapseException.class, description = "Testcase with invalid destination type")
-    public void publishMessageWithInvalidDestinationTypeTest() throws AxisFault, ConnectException {
+    public void testPublishMessageWithInvalidDestination() throws AxisFault, ConnectException {
         messageContext = createMessageContext();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue1");
@@ -87,7 +87,7 @@ public class JMSUnitTest {
     }
 
     @Test (description = "publishing message when destinationType = queue")
-    public void publishMessageWithQueueTest() throws AxisFault, ConnectException {
+    public void testPublishMessageWithQueue() throws AxisFault, ConnectException {
         messageContext = createMessageContext();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
@@ -106,7 +106,7 @@ public class JMSUnitTest {
     }
 
     @Test (description = "Publishing message when messageType is map")
-    public void publishMessageWithMapMessageTypeTest() throws AxisFault, ConnectException {
+    public void testPublishMessageWithMapMessageType() throws AxisFault, ConnectException {
         messageContext = createMessageContextForMap();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "topic");
@@ -134,7 +134,7 @@ public class JMSUnitTest {
     }
 
     @Test(description = "Publishing message when messageType is binary")
-    public void publishMessageWithBinaryMessageTypeTest() throws AxisFault, ConnectException {
+    public void testPublishMessageWithBinaryMessageType() throws AxisFault, ConnectException {
         messageContext = createMessageContextForBinary();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
@@ -161,7 +161,7 @@ public class JMSUnitTest {
     }
 
     @Test(description = "Publishing message when messageType is text")
-    public void publishMessageWithTextMessageTypeTest() throws AxisFault, ConnectException {
+    public void testPublishMessageWithTextMessageType() throws AxisFault, ConnectException {
         messageContext = createMessageContextForText();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
@@ -189,7 +189,7 @@ public class JMSUnitTest {
     }
 
     @Test(description = "publishing message when destinationType = queue")
-    public void publishMessageWithTopicTest() throws AxisFault, ConnectException {
+    public void testPublishMessageWithTopic() throws AxisFault, ConnectException {
         messageContext = createMessageContext();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "topic");
