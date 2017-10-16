@@ -61,8 +61,7 @@ public class JMSUnitTest {
         broker = createBroker();
         broker.start();
         ActiveMQConnectionFactory connFactory =
-                new ActiveMQConnectionFactory(connector.getConnectUri()
-                                                      + "?jms.prefetchPolicy.all=1");
+                new ActiveMQConnectionFactory(connector.getConnectUri() + "?jms.prefetchPolicy.all=1");
         connection = connFactory.createConnection();
         connection.start();
         System.setProperty("carbon.home", JMSUnitTest.class.getResource("/").getFile());
@@ -108,7 +107,7 @@ public class JMSUnitTest {
 
     @Test
     public void publishMessage2() throws AxisFault, ConnectException {
-        messageContext = createNewMessageContext2();
+        messageContext = createMessageContextForMap();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "topic");
         messageContext.setProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME, "TopicConnectionFactory");
@@ -136,7 +135,7 @@ public class JMSUnitTest {
 
     @Test
     public void publishMessage3() throws AxisFault, ConnectException {
-        messageContext = createNewMessageContext();
+        messageContext = createMessageContextForBinary();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
         messageContext.setProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME, "QueueConnectionFactory");
@@ -163,7 +162,7 @@ public class JMSUnitTest {
 
     @Test
     public void publishMessage4() throws AxisFault, ConnectException {
-        messageContext = createNewMessageContext1();
+        messageContext = createMessageContextForText();
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_NAME, "JMSTest");
         messageContext.setProperty(JMSConnectorConstants.DESTINATION_TYPE, "queue");
         messageContext.setProperty(JMSConnectorConstants.CONNECTION_FACTORY_NAME, "QueueConnectionFactory");
@@ -226,7 +225,7 @@ public class JMSUnitTest {
         return messageContext;
     }
 
-    protected MessageContext createNewMessageContext() throws AxisFault {
+    protected MessageContext createMessageContextForBinary() throws AxisFault {
         org.apache.axis2.context.MessageContext mc = new org.apache.axis2.context.MessageContext();
         SynapseConfiguration config = new SynapseConfiguration();
         SynapseEnvironment env = new Axis2SynapseEnvironment(config);
@@ -241,7 +240,7 @@ public class JMSUnitTest {
         return messageContext;
     }
 
-    protected MessageContext createNewMessageContext1() throws AxisFault {
+    protected MessageContext createMessageContextForText() throws AxisFault {
         org.apache.axis2.context.MessageContext mc = new org.apache.axis2.context.MessageContext();
         SynapseConfiguration config = new SynapseConfiguration();
         SynapseEnvironment env = new Axis2SynapseEnvironment(config);
@@ -256,7 +255,7 @@ public class JMSUnitTest {
         return messageContext;
     }
 
-    protected MessageContext createNewMessageContext2() throws AxisFault {
+    protected MessageContext createMessageContextForMap() throws AxisFault {
         org.apache.axis2.context.MessageContext mc = new org.apache.axis2.context.MessageContext();
         SynapseConfiguration config = new SynapseConfiguration();
         SynapseEnvironment env = new Axis2SynapseEnvironment(config);
