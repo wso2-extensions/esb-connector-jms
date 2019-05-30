@@ -26,8 +26,10 @@
             <jms.publishMessage configKey="jms_init"/>
             <property name="out" expression="get-property('MessageID')"/>
             <payloadFactory media-type="json">
-                <format>{ "MessageID":'$ctx:out'}</format>
-                <args/>
+                <format>{ "MessageID":'$1'}</format>
+                <args>
+                    <arg expression="$ctx:out"/>
+                </args>
             </payloadFactory>
             <respond/>
         </inSequence>
