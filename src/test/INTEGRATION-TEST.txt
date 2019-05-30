@@ -7,11 +7,11 @@ Pre-requisites:
  
  Tested Platform:
   - UBUNTU 14.04
-  - WSO2 ESB 4.9.0
+  - WSO2 EI 6.5.0
   - ActiveMQ 5.14.5
   
-  
-1. Copy the following client libraries from the <AMQ_HOME>/lib directory to the <ESB_HOME>/repository/components/lib directory.   
+
+1. Copy the following client libraries from the <AMQ_HOME>/lib directory to the <EI_HOME>/lib directory.
 
    activemq-broker-5.8.0.jar
    activemq-client-5.8.0.jar
@@ -24,10 +24,11 @@ Pre-requisites:
    activeio-core-3.1.4.jar (available in <AMQ_HOME>/lib/optional folder)  
  
 2. Copy init_jms.xml file from esb-connector-jms/src/test/resources/ and paste it into 
-     <ESB_HOME>/repository/deployment/server/synapse-configs/default/local-entries/jms_init.xml
+     <EI_HOME>/repository/deployment/server/synapse-configs/default/local-entries/jms_init.xml
 
 3. Start the ActiveMQ
 
-4. Make sure the ESB 5.0.0 zip file available at "esb-connector-jms/repository/"
+4. Make sure the EI 6.5.0 zip file available at "esb-connector-jms/repository/"
 
-5. Go to "esb-connector-jms/" and type "mvn clean install" to test and build
+5. Navigate to "<JMS_CONNECTOR_HOME>/" and run the following command.
+        ```$ mvn clean install -Dskip-tests=false```

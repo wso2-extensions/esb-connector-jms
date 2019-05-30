@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
- Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -26,17 +26,17 @@
     <!--
        Product Name
     -->
-    <Name>WSO2 Carbon</Name>
+    <Name>WSO2 Enterprise Integrator</Name>
 
     <!--
        machine readable unique key to identify each product
     -->
-    <ServerKey>${product.key}</ServerKey>
+    <ServerKey>EI</ServerKey>
 
     <!--
        Product Version
     -->
-    <Version>4.4.18</Version>
+    <Version>6.5.0</Version>
 
     <!--
        Host name or IP address of the machine hosting this server
@@ -73,7 +73,9 @@
     Ex : <Role>.*</Role> means this server can act any role
     -->
     <ServerRoles>
-        <Role>${carbon.server.role}</Role>
+        <Role>EnterpriseIntegrator</Role>
+        <Role>EnterpriseServiceBus</Role>
+        <Role>DataServicesServer</Role>
     </ServerRoles>
 
     <!-- uncommnet this line to subscribe to a bam instance automatically -->
@@ -98,8 +100,10 @@
    	appserver - proxy context path. This specially required whenever you are generating URLs to displace in
    	Carbon UI components.
     -->
-    <MgtProxyContextPath>/appserver/mgt</MgtProxyContextPath>
-    <ProxyContextPath>/appserver/worker</ProxyContextPath>
+    <!--
+    	<MgtProxyContextPath></MgtProxyContextPath>
+    	<ProxyContextPath></ProxyContextPath>
+    -->
 
     <!-- In-order to  get the registry http Port from the back-end when the default http transport is not the same-->
     <!--RegistryHttpPort>9763</RegistryHttpPort-->
@@ -129,7 +133,7 @@
             <!--The port RMI registry is exposed-->
             <RMIRegistryPort>9999</RMIRegistryPort>
             <!--The port RMI server should be exposed-->
-            <RMIServerPort>${rmi.server.port}</RMIServerPort>
+            <RMIServerPort>11111</RMIServerPort>
         </JMX>
 
         <!-- Embedded LDAP server specific ports -->
@@ -155,20 +159,18 @@
         <WorkerHttpsProxyPort>443</WorkerHttpsProxyPort>
         -->
 
-        <CommandListener>123</CommandListener>
     </Ports>
 
     <!--
         JNDI Configuration
     -->
     <JNDI>
-        <!-- 
+        <!--
              The fully qualified name of the default initial context factory
         -->
-        <DefaultInitialContextFactory>org.wso2.carbon.tomcat.jndi.CarbonJavaURLContextFactory
-        </DefaultInitialContextFactory>
-        <!-- 
-             The restrictions that are done to various JNDI Contexts in a Multi-tenant environment 
+        <DefaultInitialContextFactory>org.wso2.carbon.tomcat.jndi.CarbonJavaURLContextFactory</DefaultInitialContextFactory>
+        <!--
+             The restrictions that are done to various JNDI Contexts in a Multi-tenant environment
         -->
         <Restrictions>
             <!--
@@ -184,7 +186,7 @@
                     </UrlContext>
                 </UrlContexts>
             </SuperTenantOnly> -->
-            <!-- 
+            <!--
                 Contexts that are common to all tenants
             -->
             <AllTenants>
@@ -197,8 +199,8 @@
                     </UrlContext> -->
                 </UrlContexts>
             </AllTenants>
-            <!-- 
-                 All other contexts not mentioned above will be available on a per-tenant basis 
+            <!--
+                 All other contexts not mentioned above will be available on a per-tenant basis
                  (i.e. will not be shared among tenants)
             -->
         </Restrictions>
@@ -289,7 +291,7 @@
 
         <!--
          Deployment update interval in seconds. This is the interval between repository listener
-         executions. 
+         executions.
         -->
         <DeploymentUpdateInterval>15</DeploymentUpdateInterval>
 
@@ -304,7 +306,7 @@
             3. file:///home/carbon/repository/axis2.xml
             4. http://repository/conf/axis2.xml
         -->
-        <ConfigurationFile>${carbon.home}/repository/conf/axis2/axis2.xml</ConfigurationFile>
+        <ConfigurationFile>${carbon.home}/conf/axis2/axis2.xml</ConfigurationFile>
 
         <!--
           ServiceGroupContextIdleTime, which will be set in ConfigurationContex
@@ -320,7 +322,7 @@
         <ClientRepositoryLocation>${carbon.home}/repository/deployment/client/</ClientRepositoryLocation>
         <!-- This axis2 xml is used in createing the configuration context by the FE server
          calling to BE server -->
-        <clientAxis2XmlLocation>${carbon.home}/repository/conf/axis2/axis2_client.xml</clientAxis2XmlLocation>
+        <clientAxis2XmlLocation>${carbon.home}/conf/axis2/axis2_client.xml</clientAxis2XmlLocation>
         <!-- If this parameter is set, the ?wsdl on an admin service will not give the admin service wsdl. -->
         <HideAdminServiceWSDLs>true</HideAdminServiceWSDLs>
 
@@ -346,10 +348,36 @@
         </Role>
     </ServiceUserRoles>
 
-    <!-- 
-      Enable following config to allow Emails as usernames. 	
+    <!--
+      Enable following config to allow Emails as usernames.
     -->
     <!--EnableEmailUserName>true</EnableEmailUserName-->
+
+    <!--
+       Configurations related to Carbon Crypto Service which is a crypto framework used inside Carbon products.
+    -->
+    <CryptoService>
+
+        <Enabled>true</Enabled>
+
+        <!-- The crypto provider which is used for internal data encryption and decryption -->
+        <InternalCryptoProviderClassName>org.wso2.carbon.crypto.provider.KeyStoreBasedInternalCryptoProvider</InternalCryptoProviderClassName>
+
+        <!--
+            The crypto provider which is used for the crypto needs which come when communicating with external parties.
+            e.g. Signing, Decrypting.
+        -->
+        <ExternalCryptoProviderClassName>org.wso2.carbon.core.encryption.KeyStoreBasedExternalCryptoProvider</ExternalCryptoProviderClassName>
+
+        <!--
+            The list of key resolvers which will be used based on the context when handling crypto with external parties.
+            e.g. Resolving the public key of an external entity.
+        -->
+        <KeyResolvers>
+            <KeyResolver className="org.wso2.carbon.crypto.defaultProvider.resolver.ContextIndependentKeyResolver" priority="-1"/>
+        </KeyResolvers>
+
+    </CryptoService>
 
     <!--
       Security configurations
@@ -373,6 +401,23 @@
         </KeyStore>
 
         <!--
+            The KeyStore which is used for encrypting/decrypting internal data.
+            This block is read by Carbon Crypto Service.
+        -->
+        <InternalKeyStore>
+            <!-- Keystore file location-->
+            <Location>${carbon.home}/repository/resources/security/wso2carbon.jks</Location>
+            <!-- Keystore type (JKS/PKCS12 etc.)-->
+            <Type>JKS</Type>
+            <!-- Keystore password-->
+            <Password>wso2carbon</Password>
+            <!-- Private Key alias-->
+            <KeyAlias>wso2carbon</KeyAlias>
+            <!-- Private Key password-->
+            <KeyPassword>wso2carbon</KeyPassword>
+        </InternalKeyStore>
+
+        <!--
             System wide trust-store which is used to maintain the certificates of all
             the trusted parties.
         -->
@@ -387,11 +432,11 @@
 
         <!--
             The Authenticator configuration to be used at the JVM level. We extend the
-            java.net.Authenticator to make it possible to authenticate to given servers and 
+            java.net.Authenticator to make it possible to authenticate to given servers and
             proxies.
         -->
         <NetworkAuthenticatorConfig>
-            <!-- 
+            <!--
                 Below is a sample configuration for a single authenticator. Please note that
                 all child elements are mandatory. Not having some child elements would lead to
                 exceptions at runtime.
@@ -422,7 +467,7 @@
 
          If this is set to 'UserManager', the realm will pick users & roles from the system's
          WSO2 User Manager. If it is set to 'memory', the realm will pick users & roles from
-         CARBON_HOME/repository/conf/tomcat/tomcat-users.xml
+         CARBON_HOME/conf/tomcat/tomcat-users.xml
         -->
         <TomcatRealm>UserManager</TomcatRealm>
 
@@ -536,7 +581,7 @@
 
        The value of the Item element is the first parameter in the query string(e.g. ?wsdl)
        which needs special processing
-       
+
        The value of the Class element is a class which implements
        org.wso2.carbon.transport.HttpGetRequestProcessor
     -->
@@ -621,7 +666,7 @@
         name="pgPort"  - The port (default: 5435)
         name="pgAllowOthers"  - Allow other computers to connect
         name="trace" - Print additional trace information; for all servers
-        name="baseDir" - The base directory for H2 databases; for all servers  
+        name="baseDir" - The base directory for H2 databases; for all servers
     -->
     <!--H2DatabaseConfiguration>
         <property name="web" />
@@ -675,9 +720,25 @@
         <LoadAPIContextsInServerStartup>true</LoadAPIContextsInServerStartup>
     </APIManagement>
 
-    <Management>
-        <EnableConsole>true</EnableConsole>
-    </Management>
-
+    <!--
+     Configuring EI analytics server details.
+     mediation.flow.statistics.enable has to be set to true in synapse.properties
+     file in addition to these configs
+     -->
+    <Analytics>
+        <!--
+            Server URL of the analytics server. Events are published to this URL
+            This url is in the format <protocol>://<hostname or ip>:<port>.
+            For the HA mode use a comma seperated list of urls of the nalytics nodes to
+            enable publishing events to the servers in a round robin manner.
+            e.g.; tcp://analytics-server-1:7612,tcp://analytics-server-2:7612
+         -->
+        <ServerURL>tcp://localhost:7612</ServerURL>
+        <AuthServerURL>ssl://localhost:7712</AuthServerURL>
+        <!--
+            Credentails of the admin user of the analytics server.
+        -->
+        <Username>admin</Username>
+        <Password>admin</Password>
+    </Analytics>
 </Server>
-
