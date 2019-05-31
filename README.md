@@ -6,8 +6,8 @@ The JMS [Connector](https://docs.wso2.com/display/EI650/Working+with+Connectors)
 
 | Connector version | Supported JMS version | Supported WSO2 ESB/EI version |
 | ------------- | ------------- | ------------- |
-| [1.0.1](https://github.com/keerthu/esb-connector-jms/tree/org.wso2.carbon.connector.jms-1.0.1) | 1.1 | EI 6.5.0 |
-| [1.0.0](https://github.com/keerthu/esb-connector-jms/tree/org.wso2.carbon.connector.jms-1.0.0) | 1.1 | ESB 5.0.0, 4.9.0 |
+| [1.0.1](https://github.com/wso2-extensions/esb-connector-jms/tree/org.wso2.carbon.connector.jms-1.0.1) | 1.1 | EI 6.5.0 |
+| [1.0.0](https://github.com/wso2-extensions/esb-connector-jms/tree/org.wso2.carbon.connector.jms-1.0.0) | 1.1 | ESB 5.0.0, 4.9.0 |
 
 
 ## Getting started
