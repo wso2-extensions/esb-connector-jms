@@ -1,0 +1,20 @@
+{
+    "name": "JMS",
+    "owner": "WSO2",
+    "category": "Other",
+    "documentationUrl": "https://github.com/wso2-extensions/esb-connector-jms/blob/1.0.1/README.md",
+    "description": "WSO2 ESB's Java Message Service (JMS) connector allows you to easily send messages to queues and topics of any JMS service that implements the JMS specification. ",
+    "status": "Active",
+    "labels": [
+        "jms"
+    ],
+    "releases": [
+        {
+            "tagName": "v1.0.1",
+            "products": [
+                "\"EI 6.5.0\""
+            ],
+            "isHidden": false
+        }
+    ]
+}
